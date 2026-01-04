@@ -90,7 +90,11 @@ def load_tarifs():
         "surface_factor_petit": 0.6,
         "surface_factor_grand": 0.5,
         "surface_seuil": 750,
-        "plus_factor": 1.4,
+        "plus_factor_petit": 3.69,
+        "plus_factor_moyen": 2.29,
+        "plus_factor_grand": 1.79,
+        "plus_seuil_petit": 160,
+        "plus_seuil_grand": 750,
         "plus_price_max": 1989,
         "frais_emission_cecb": 80,
         "prix_conseil_incitatif": 0,
@@ -133,6 +137,7 @@ def load_textes():
             "prestations_incluses_cecb": "Prestations incluses :<br>- Visite sur site et relevé<br>- Etablissement du CECB®<br>- Rapport de 8 à 12 pages",
             "prestations_non_incluses_cecb": "Prestations non-incluses :<br>- Rapport CECB® Plus<br>- Conseil Chauffez Renouvelable®",
             "prestations_incluses_cecb_plus": "Prestations incluses :<br>- Visite sur site et relevé<br>- Etablissement du CECB® et CECB® Plus<br>- Rapport de 15 à 25 pages<br>- Variantes de rénovation chiffrées",
+            "prestations_non_incluses_cecb_plus": "Prestations non-incluses :<br>- Conseil Incitatif Chauffez Renouvelable®",
             "prestations_incluses_conseil": "Prestations incluses :<br>- Conseil personnalisé sur les solutions de chauffage renouvelable<br>- Visite sur site si nécessaire<br>- Recommandations adaptées à votre bâtiment"
         }
 

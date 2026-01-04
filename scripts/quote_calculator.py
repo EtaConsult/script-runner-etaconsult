@@ -109,10 +109,12 @@ class QuoteCalculator:
 
         # Si CECB Plus demandé
         if is_plus:
+            plus_factor = self._get_plus_factor(surface_eq)
             cecb_plus_price = min(
                 self.tarifs["plus_price_max"],
-                round(cecb_price * self.tarifs["plus_factor"])
+                round(cecb_price * plus_factor)
             )
+            logger.info(f"   Facteur CECB Plus: {plus_factor} (pour S_eq = {surface_eq:.2f} m²)")
             logger.info(f"   Prix CECB Plus: {cecb_plus_price} CHF (max {self.tarifs['plus_price_max']} CHF)")
             return cecb_plus_price
 
@@ -226,6 +228,27 @@ class QuoteCalculator:
         if distance_km < self.tarifs["km_seuil"]:
             return self.tarifs["km_factor_proche"]
         return self.tarifs["km_factor_loin"]
+
+    def _get_plus_factor(self, surface_eq: float) -> float:
+        """
+        Retourne le facteur CECB Plus selon la surface équivalente
+
+        Args:
+            surface_eq: Surface équivalente en m²
+
+        Returns:
+            Facteur multiplicateur pour CECB Plus
+        """
+        # Récupérer les seuils et facteurs depuis les tarifs configurables
+        seuil_petit = self.tarifs.get("plus_seuil_petit", 160)
+        seuil_grand = self.tarifs.get("plus_seuil_grand", 750)
+
+        if surface_eq < seuil_petit:
+            return self.tarifs.get("plus_factor_petit", 3.69)
+        elif surface_eq < seuil_grand:
+            return self.tarifs.get("plus_factor_moyen", 2.29)
+        else:
+            return self.tarifs.get("plus_factor_grand", 1.79)
 
     def _parse_sous_sol_combles(self, value: str) -> float:
         """Parse la valeur du select sous-sol/combles vers un coefficient"""

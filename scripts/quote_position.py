@@ -282,7 +282,12 @@ class QuotePositionBuilder:
             legal_texts.get("responsabilite_cecb", "")
         ))
 
-        # 7. Message personnalisé (si fourni)
+        # 7. Prestations non-incluses CECB Plus
+        positions.append(QuotePosition.create_text_position(
+            legal_texts.get("prestations_non_incluses_cecb_plus", "")
+        ))
+
+        # 8. Message personnalisé (si fourni)
         if form_data.get("message_personnalise"):
             message_formatted = legal_texts.get("format_custom_message", lambda x: x)(
                 form_data["message_personnalise"]

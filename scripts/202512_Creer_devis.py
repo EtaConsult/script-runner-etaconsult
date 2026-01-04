@@ -193,6 +193,7 @@ def create_bexio_quote(
         "prestations_incluses_cecb": legal_texts.PRESTATIONS_INCLUSES_CECB,
         "prestations_non_incluses_cecb": legal_texts.PRESTATIONS_NON_INCLUSES_CECB,
         "prestations_incluses_cecb_plus": legal_texts.PRESTATIONS_INCLUSES_CECB_PLUS,
+        "prestations_non_incluses_cecb_plus": legal_texts.PRESTATIONS_NON_INCLUSES_CECB_PLUS,
         "prestations_incluses_conseil": legal_texts.PRESTATIONS_INCLUSES_CONSEIL,
         "responsabilite_cecb": legal_texts.RESPONSABILITE_CECB,
         "format_custom_message": legal_texts.format_custom_message

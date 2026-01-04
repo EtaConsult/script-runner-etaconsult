@@ -6,6 +6,10 @@ config.py
 # Fichier des utilisateurs (contient les comptes et mots de passe hachés)
 users.json
 
+# Fichiers de configuration modifiables (tarifs et textes)
+tarifs.json
+textes.json
+
 # Environnement virtuel Python
 venv/
 env/

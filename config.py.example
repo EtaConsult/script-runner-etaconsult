@@ -1,105 +1,57 @@
-# -*- coding: utf-8 -*-
-"""
-Configuration de l'application Script Runner
-RENOMMER CE FICHIER EN config.py ET REMPLIR VOS CREDENTIALS
-"""
+# config.py.example
+# Copie ce fichier en config.py et remplis avec tes vraies valeurs
 
 # ==========================================
 # CREDENTIALS API
 # ==========================================
-# NE JAMAIS COMMITER config.py DANS GIT !
-# Ajouter config.py dans .gitignore
 
-BEXIO_API_TOKEN = "votre_token_bexio_ici"
-GOOGLE_MAPS_API_KEY = ""  # Requis pour l'autocomplétion d'adresse dans le formulaire CECB
+# Bexio API
+BEXIO_API_TOKEN = "ton_token_bexio_ici"
+
+# OneDrive API (optionnel)
+ONEDRIVE_CLIENT_ID = "TO_BE_CONFIGURED"
+ONEDRIVE_CLIENT_SECRET = "TO_BE_CONFIGURED"
+
+# Google Maps API (optionnel)
+GOOGLE_MAPS_API_KEY = "ta_cle_google_maps_ici"
 
 # ==========================================
 # CONSTANTES ENTREPRISE
 # ==========================================
+
 BEXIO_BASE_URL = "https://api.bexio.com"
 ETA_CONSULT_ADDRESS = "Route de l'Hôpital 16b, 1180 Rolle, Suisse"
-ETA_CONSULT_COORDS = (46.4571, 6.3375)  # Latitude, Longitude pour calcul distance
-
-# ==========================================
-# PARAMÈTRES TARIFAIRES
-# ==========================================
-# Ces paramètres sont également dans tarifs.json
-# Si tarifs.json existe, il sera utilisé en priorité
-# Sinon, ces valeurs par défaut seront utilisées
-
-TARIFS = {
-    # --- Prix de base ---
-    "base_price": 500,              # Prix de base CECB en CHF
-
-    # --- Forfaits kilométriques ---
-    "km_factor_proche": 0.9,        # Facteur km si distance < seuil
-    "km_factor_loin": 0.7,          # Facteur km si distance >= seuil
-    "km_seuil": 25,                 # Seuil de distance en km
-
-    # --- Forfaits surface ---
-    "surface_factor_petit": 0.6,    # Facteur surface si S_eq < seuil
-    "surface_factor_grand": 0.5,    # Facteur surface si S_eq >= seuil
-    "surface_seuil": 750,           # Seuil de surface équivalente en m²
-
-    # --- CECB Plus ---
-    "plus_factor": 1.4,             # Multiplicateur pour CECB Plus
-    "plus_price_max": 1989,         # Prix maximum CECB Plus en CHF
-
-    # --- Frais fixes ---
-    "frais_emission_cecb": 80,      # Frais d'émission plateforme CECB
-    "prix_conseil_incitatif": 0,    # Prix Conseil Incitatif (gratuit)
-
-    # --- Forfaits délai ---
-    "forfait_normal": 0,            # Supplément délai normal
-    "forfait_express": 135,         # Supplément délai express
-    "forfait_urgent": 270,          # Supplément délai urgent
-}
-
-# ==========================================
-# TEXTES MODIFIABLES
-# ==========================================
-TEXTES = {
-    "footer_acompte": "Conditions de paiement : Acompte de 30% à la commande, solde à réception du rapport.",
-
-    "prestations_incluses_cecb": """Prestations incluses :
-- Visite sur site et relevé
-- Etablissement du CECB®
-- Rapport de 8 à 12 pages""",
-
-    "prestations_non_incluses_cecb": """Prestations non-incluses :
-- Rapport CECB® Plus
-- Conseil Chauffez Renouvelable®""",
-
-    "prestations_incluses_cecb_plus": """Prestations incluses :
-- Visite sur site et relevé
-- Etablissement du CECB® et CECB® Plus
-- Rapport de 15 à 25 pages
-- Variantes de rénovation chiffrées""",
-
-    "prestations_incluses_conseil": """Prestations incluses :
-- Conseil personnalisé sur les solutions de chauffage renouvelable
-- Visite sur site si nécessaire
-- Recommandations adaptées à votre bâtiment""",
-}
+ETA_CONSULT_COORDS = (46.4571, 6.3375)  # Latitude, Longitude
 
 # ==========================================
 # BEXIO IDs
 # ==========================================
-# IDs utilisés pour la création des offres
+# IDs à récupérer depuis ton compte Bexio
+
 BEXIO_IDS = {
-    "user_id": 1,           # ID de l'utilisateur Bexio
-    "currency_id": 1,       # 1 = CHF
-    "language_id": 2,       # 2 = Français
-    "country_id": 1,        # 1 = Suisse
-    "unit_id": 3,           # 3 = "ens" (ensemble)
-    "tax_id": 28,           # 28 = TVA 8.1%
-    "mwst_type": 0,         # Type de TVA
-    "template_slug": "standard",  # Template d'offre
+    "user_id": 1,              # Ton user ID Bexio
+    "currency_id": 1,          # ID devise (1 = CHF)
+    "language_id": 2,          # ID langue (2 = français)
+    "country_id": 1,           # ID pays (1 = Suisse)
+    "unit_id": 3,              # ID unité (3 = ensemble)
+    "tax_id": 28,              # ID du taux TVA (trouve le tien dans Bexio > Paramètres > Taxes)
+    "mwst_type": 0,            # Type TVA (0 = net)
+    "template_slug": "standard"  # Template d'offre
+}
+
+# ==========================================
+# CONTACT TYPES BEXIO
+# ==========================================
+
+CONTACT_TYPES = {
+    "Privé": 1,      # Personne privée
+    "Société": 2     # Entreprise
 }
 
 # ==========================================
 # SALUTATIONS BEXIO
 # ==========================================
+
 SALUTATIONS = {
     "Mme": 1,   # Madame
     "M.": 2,    # Monsieur
@@ -107,9 +59,7 @@ SALUTATIONS = {
 }
 
 # ==========================================
-# CONTACT TYPES BEXIO
+# NOTES
 # ==========================================
-CONTACT_TYPES = {
-    "Privé": 1,      # Personne privée
-    "Société": 2     # Entreprise
-}
+# Les TARIFS et TEXTES sont maintenant gérés dans tarifs.json et textes.json
+# Ces fichiers sont édités via l'interface web de l'application

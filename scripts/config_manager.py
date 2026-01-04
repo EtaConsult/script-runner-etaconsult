@@ -14,6 +14,10 @@ from typing import Dict, Any, Optional
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Désactiver le proxy PythonAnywhere pour les appels API externes
+os.environ['NO_PROXY'] = '*'
+os.environ['no_proxy'] = '*'
+
 
 class ConfigManager:
     """
@@ -121,7 +125,11 @@ class ConfigManager:
             "surface_factor_petit": 0.6,
             "surface_factor_grand": 0.5,
             "surface_seuil": 750,
-            "plus_factor": 1.4,
+            "plus_factor_petit": 3.69,
+            "plus_factor_moyen": 2.29,
+            "plus_factor_grand": 1.79,
+            "plus_seuil_petit": 160,
+            "plus_seuil_grand": 750,
             "plus_price_max": 1989,
             "frais_emission_cecb": 80,
             "prix_conseil_incitatif": 0,
@@ -138,6 +146,7 @@ class ConfigManager:
             "prestations_incluses_cecb": "Prestations incluses pour CECB",
             "prestations_non_incluses_cecb": "Prestations non-incluses",
             "prestations_incluses_cecb_plus": "Prestations incluses pour CECB Plus",
+            "prestations_non_incluses_cecb_plus": "Prestations non-incluses pour CECB Plus",
             "prestations_incluses_conseil": "Prestations incluses pour Conseil Incitatif"
         }
 
@@ -202,6 +211,10 @@ class ConfigManager:
     def get_eta_consult_address(self) -> str:
         """Retourne l'adresse d'Êta Consult"""
         return getattr(self.config_module, 'ETA_CONSULT_ADDRESS', 'Route de l\'Hôpital 16b, 1180 Rolle, Suisse')
+
+    def get_eta_consult_coords(self) -> tuple:
+        """Retourne les coordonnées GPS d'Êta Consult"""
+        return getattr(self.config_module, 'ETA_CONSULT_COORDS', (46.4571, 6.3375))
 
     def get_bexio_ids(self) -> Dict[str, Any]:
         """Retourne les IDs Bexio"""

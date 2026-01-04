@@ -333,15 +333,64 @@
 
             <!-- SECTION 4: CECB PLUS -->
             <div class="section">
-                <div class="section-title">CECB Plus</div>
+                <div class="section-title">CECB Plus - Facteurs dynamiques</div>
 
-                <div class="row">
+                <div class="info-box" style="margin-bottom: 20px; background: #fff3cd; border-left-color: #ffc107;">
+                    <strong>ℹ️ Facteurs selon surface équivalente (S_eq) :</strong>
+                    <ul style="margin: 10px 0 0 20px; font-size: 13px;">
+                        <li>S_eq < 160 m² → Facteur petit bâtiment</li>
+                        <li>160 m² ≤ S_eq < 750 m² → Facteur moyen bâtiment</li>
+                        <li>S_eq ≥ 750 m² → Facteur grand bâtiment</li>
+                    </ul>
+                </div>
+
+                <div class="row-3">
                     <div class="form-group">
-                        <label for="plus_factor">
-                            Multiplicateur CECB Plus
-                            <div class="label-description">Coefficient appliqué au prix CECB</div>
+                        <label for="plus_factor_petit">
+                            Facteur petit bâtiment
+                            <div class="label-description">Si S_eq < 160 m²</div>
                         </label>
-                        <input type="number" id="plus_factor" name="plus_factor" value="{{ tarifs.plus_factor }}" required min="0" step="0.1">
+                        <input type="number" id="plus_factor_petit" name="plus_factor_petit" value="{{ tarifs.plus_factor_petit }}" required min="0" step="0.01">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="plus_factor_moyen">
+                            Facteur moyen bâtiment
+                            <div class="label-description">Si 160 m² ≤ S_eq < 750 m²</div>
+                        </label>
+                        <input type="number" id="plus_factor_moyen" name="plus_factor_moyen" value="{{ tarifs.plus_factor_moyen }}" required min="0" step="0.01">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="plus_factor_grand">
+                            Facteur grand bâtiment
+                            <div class="label-description">Si S_eq ≥ 750 m²</div>
+                        </label>
+                        <input type="number" id="plus_factor_grand" name="plus_factor_grand" value="{{ tarifs.plus_factor_grand }}" required min="0" step="0.01">
+                    </div>
+                </div>
+
+                <div class="row-3">
+                    <div class="form-group">
+                        <label for="plus_seuil_petit">
+                            Seuil petit/moyen
+                            <div class="label-description">Limite entre petit et moyen</div>
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="number" id="plus_seuil_petit" name="plus_seuil_petit" value="{{ tarifs.plus_seuil_petit }}" required min="0" step="1">
+                            <span class="unit">m²</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="plus_seuil_grand">
+                            Seuil moyen/grand
+                            <div class="label-description">Limite entre moyen et grand</div>
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="number" id="plus_seuil_grand" name="plus_seuil_grand" value="{{ tarifs.plus_seuil_grand }}" required min="0" step="1">
+                            <span class="unit">m²</span>
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -505,7 +554,11 @@
                     surface_factor_petit: 0.6,
                     surface_factor_grand: 0.5,
                     surface_seuil: 750,
-                    plus_factor: 1.4,
+                    plus_factor_petit: 3.69,
+                    plus_factor_moyen: 2.29,
+                    plus_factor_grand: 1.79,
+                    plus_seuil_petit: 160,
+                    plus_seuil_grand: 750,
                     plus_price_max: 1989,
                     frais_emission_cecb: 80,
                     prix_conseil_incitatif: 0,
