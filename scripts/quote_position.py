@@ -274,7 +274,7 @@ class QuotePositionBuilder:
 
         # 5. Frais d'émission CECB Plus
         positions.append(QuotePosition.create_custom_position(
-            text="Frais d'émission du rapport CECB Plus sur la plateforme",
+            text="Frais d'émission du rapport CECB Plus sur la plateforme (nouveaux tarifs à partir du 01.01.2026)",
             amount=1,
             unit_price=self.tarifs["frais_emission_cecb_plus"],
             tax_id=self.bexio_ids["tax_id"],
