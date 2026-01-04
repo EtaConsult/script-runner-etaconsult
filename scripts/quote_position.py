@@ -288,7 +288,7 @@ class QuotePositionBuilder:
 
         # 7. Demande de subvention
         positions.append(QuotePosition.create_custom_position(
-            text="Demande de subvention par l'expert CECB selon les conditions d'éligibilité du Programme des Bâtiments : Mesure I",
+            text="Demande de subvention par l'expert CECB selon les conditions d'éligibilité du Programme des Bâtiments :<br>- Mesure IM-07: Etablissement d'un CECB®Plus",
             amount=1,
             unit_price=self.tarifs["demande_subvention_cecb_plus"],
             tax_id=self.bexio_ids["tax_id"],
