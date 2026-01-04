@@ -41,6 +41,12 @@ PRESTATIONS_NON_INCLUSES_CECB_PLUS = """<strong>Prestations non-incluses :</stro
 
 PRESTATIONS_INCLUSES_CONSEIL = """<strong>Prestations incluses :</strong><br>- Conseil personnalisé sur les solutions de chauffage renouvelable<br>- Visite sur site<br>- Etablissement de la checklist Chauffez Renouvelable®<br>- Recommandations adaptées à votre bâtiment"""
 
+# ==========================================
+# SUBVENTIONS CECB PLUS
+# ==========================================
+
+SUBVENTIONS_CECB_PLUS = """<strong>Subventions cantonales (Canton de Vaud)</strong><br><br>Le Canton de Vaud propose une subvention aux propriétaires de bâtiments construits avant 2000 pour l'établissement d'un Certificat énergétique cantonal des bâtiments Plus (CECB Plus). Cette dernière n'est pas intégrée à la présente offre d'honoraires.<br><br>L'aide financière est fixée selon les principes suivants :<br>- Habitat individuel: 1000 fr.<br>- Habitat collectif: 1500 fr.<br><br>Sont considérées comme habitations individuelles des constructions comprenant au maximum deux logements.<br><br><strong>IMPORTANT :</strong> La demande doit être impérativement remise avant le début de la prestation. Une subvention ne peut être accordée pour une prestation en cours (art. 24 loi du 17 novembre 1999 sur les subventions)."""
+
 
 # ==========================================
 # FORMATAGE MESSAGE PERSONNALISÉ

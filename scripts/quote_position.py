@@ -272,22 +272,50 @@ class QuotePositionBuilder:
             unit_id=self.bexio_ids["unit_id"]
         ))
 
-        # 5. Prestations incluses CECB Plus
+        # 5. Frais d'émission CECB Plus
+        positions.append(QuotePosition.create_custom_position(
+            text="Frais d'émission du rapport CECB Plus sur la plateforme",
+            amount=1,
+            unit_price=self.tarifs["frais_emission_cecb_plus"],
+            tax_id=self.bexio_ids["tax_id"],
+            unit_id=self.bexio_ids["unit_id"]
+        ))
+
+        # 6. Conseil à la restitution du rapport CECB Plus
+        positions.append(QuotePosition.create_custom_position(
+            text="Conseils à la restitution du rapport CECB®Plus - Lecture commentée du rapport de conseil",
+            amount=1,
+            unit_price=self.tarifs["conseil_restitution_cecb_plus"],
+            tax_id=self.bexio_ids["tax_id"],
+            unit_id=self.bexio_ids["unit_id"]
+        ))
+
+        # 7. Demande de subvention
+        positions.append(QuotePosition.create_text_position(
+            "Demande de subvention par l'expert CECB selon les conditions d'éligibilité du Programme des Bâtiments : Mesure I"
+        ))
+
+        # 8. Informations sur les subventions
+        positions.append(QuotePosition.create_text_position(
+            legal_texts.get("subventions_cecb_plus", "")
+        ))
+
+        # 9. Prestations incluses CECB Plus
         positions.append(QuotePosition.create_text_position(
             legal_texts.get("prestations_incluses_cecb_plus", "")
         ))
 
-        # 6. Clause de responsabilité CECB
+        # 10. Clause de responsabilité CECB
         positions.append(QuotePosition.create_text_position(
             legal_texts.get("responsabilite_cecb", "")
         ))
 
-        # 7. Prestations non-incluses CECB Plus
+        # 11. Prestations non-incluses CECB Plus
         positions.append(QuotePosition.create_text_position(
             legal_texts.get("prestations_non_incluses_cecb_plus", "")
         ))
 
-        # 8. Message personnalisé (si fourni)
+        # 12. Message personnalisé (si fourni)
         if form_data.get("message_personnalise"):
             message_formatted = legal_texts.get("format_custom_message", lambda x: x)(
                 form_data["message_personnalise"]
