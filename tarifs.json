@@ -1,0 +1,22 @@
+{
+  "base_price": 500,
+  "km_factor_proche": 0.9,
+  "km_factor_loin": 0.7,
+  "km_seuil": 25,
+  "surface_factor_petit": 0.7,
+  "surface_factor_grand": 0.6,
+  "surface_seuil": 750,
+  "plus_factor_petit": 3.69,
+  "plus_factor_moyen": 2.29,
+  "plus_factor_grand": 1.79,
+  "plus_seuil_petit": 160,
+  "plus_seuil_grand": 750,
+  "plus_price_max": 1989,
+  "frais_emission_cecb": 80,
+  "frais_emission_cecb_plus": 110,
+  "prix_conseil_incitatif": 0,
+  "conseil_restitution_cecb_plus": 155,
+  "forfait_normal": 0,
+  "forfait_express": 155,
+  "forfait_urgent": 310
+}

@@ -7,7 +7,6 @@ config.py
 users.json
 
 # Fichiers de configuration modifiables (tarifs et textes)
-tarifs.json
 textes.json
 
 # Environnement virtuel Python
