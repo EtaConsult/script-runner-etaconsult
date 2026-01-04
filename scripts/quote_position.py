@@ -281,16 +281,7 @@ class QuotePositionBuilder:
             unit_id=self.bexio_ids["unit_id"]
         ))
 
-        # 6. Conseil à la restitution du rapport CECB Plus
-        positions.append(QuotePosition.create_custom_position(
-            text="Conseils à la restitution du rapport CECB®Plus<br>- Lecture commentée du rapport de conseil",
-            amount=1,
-            unit_price=self.tarifs["conseil_restitution_cecb_plus"],
-            tax_id=self.bexio_ids["tax_id"],
-            unit_id=1  # 1 = heures (h)
-        ))
-
-        # 7. Demande de subvention
+        # 6. Demande de subvention
         positions.append(QuotePosition.create_custom_position(
             text="Demande de subvention par l'expert CECB selon les conditions d'éligibilité du Programme des Bâtiments : Mesure I",
             amount=1,
@@ -299,14 +290,23 @@ class QuotePositionBuilder:
             unit_id=self.bexio_ids["unit_id"]
         ))
 
-        # 8. Informations sur les subventions
+        # 7. Informations sur les subventions
         positions.append(QuotePosition.create_text_position(
             legal_texts.get("subventions_cecb_plus", "")
         ))
 
-        # 9. Prestations incluses CECB Plus
+        # 8. Prestations incluses CECB Plus
         positions.append(QuotePosition.create_text_position(
             legal_texts.get("prestations_incluses_cecb_plus", "")
+        ))
+
+        # 9. Conseil à la restitution du rapport CECB Plus
+        positions.append(QuotePosition.create_custom_position(
+            text="Conseils à la restitution du rapport CECB®Plus<br>- Lecture commentée du rapport de conseil",
+            amount=1,
+            unit_price=self.tarifs["conseil_restitution_cecb_plus"],
+            tax_id=self.bexio_ids["tax_id"],
+            unit_id=1  # 1 = heures (h)
         ))
 
         # 10. Clause de responsabilité CECB
