@@ -283,7 +283,7 @@ class QuotePositionBuilder:
 
         # 6. Conseil à la restitution du rapport CECB Plus
         positions.append(QuotePosition.create_custom_position(
-            text="Conseils à la restitution du rapport CECB®Plus - Lecture commentée du rapport de conseil",
+            text="Conseils à la restitution du rapport CECB®Plus<br>- Lecture commentée du rapport de conseil",
             amount=1,
             unit_price=self.tarifs["conseil_restitution_cecb_plus"],
             tax_id=self.bexio_ids["tax_id"],
