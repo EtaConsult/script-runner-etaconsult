@@ -180,7 +180,7 @@ class QuotePositionBuilder:
         # 3. Forfait exécution (si non nul)
         if pricing["forfait_execution"] > 0:
             positions.append(QuotePosition.create_custom_position(
-                text=f"Forfait exécution {pricing['delai_label']}",
+                text="Forfait relatif au délai d'exécution :<br>- Normal > 10 jours ouvrés, à convenir : 0.- HT<br>- Express < 5 jours ouvrés : 155.- HT<br>- Urgent < 48h : 310.- HT",
                 amount=1,
                 unit_price=pricing["forfait_execution"],
                 tax_id=self.bexio_ids["tax_id"],
@@ -255,7 +255,7 @@ class QuotePositionBuilder:
         # 3. Forfait exécution (si non nul)
         if pricing["forfait_execution"] > 0:
             positions.append(QuotePosition.create_custom_position(
-                text=f"Forfait exécution {pricing['delai_label']}",
+                text="Forfait relatif au délai d'exécution :<br>- Normal > 10 jours ouvrés, à convenir : 0.- HT<br>- Express < 5 jours ouvrés : 155.- HT<br>- Urgent < 48h : 310.- HT",
                 amount=1,
                 unit_price=pricing["forfait_execution"],
                 tax_id=self.bexio_ids["tax_id"],
