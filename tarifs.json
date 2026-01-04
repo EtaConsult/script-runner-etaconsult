@@ -16,6 +16,7 @@
   "frais_emission_cecb_plus": 110,
   "prix_conseil_incitatif": 0,
   "conseil_restitution_cecb_plus": 155,
+  "demande_subvention_cecb_plus": 155,
   "forfait_normal": 0,
   "forfait_express": 155,
   "forfait_urgent": 310
