@@ -197,6 +197,20 @@
             border: 1px solid #f5c6cb;
         }
 
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
         .unit {
             position: absolute;
             right: 15px;
@@ -238,6 +252,7 @@
 </head>
 <body>
     <div class="container">
+        <a href="/" class="back-link">← Retour au tableau de bord</a>
         <h1>Administration des Tarifs</h1>
         <p class="subtitle">Modifier les paramètres tarifaires pour les devis CECB</p>
 

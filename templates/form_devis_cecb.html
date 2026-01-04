@@ -210,10 +210,25 @@
             font-size: 0.95rem;
             color: var(--text);
         }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
     <div class="container">
+        <a href="/" class="back-link">← Retour au tableau de bord</a>
         <header>
             <h1>🏠 Créer un Devis CECB</h1>
             <p class="subtitle">Générer automatiquement un devis CECB, CECB Plus ou Conseil Incitatif dans Bexio</p>
