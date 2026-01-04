@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nouveau Devis CECB - Script Runner</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ google_api_key }}&libraries=places&language=fr&region=CH"></script>
+    <style>
+        .form-container {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 1200px) {
+            .form-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-panel {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 1px 3px var(--shadow);
+        }
+
+        .form-panel h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--text);
+        }
+
+        .section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: var(--bg);
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            color: var(--primary);
+            margin-bottom: 1.25rem;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .form-group label .required {
+            color: var(--error);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.65rem 0.85rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            padding: 0.85rem;
+            background: white;
+            border-radius: 6px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .checkbox-group label {
+            margin: 0 !important;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--primary);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 0.85rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-primary:disabled {
+            background: var(--text-light);
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: var(--border);
+            color: var(--text);
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e1;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            color: #1976d2;
+        }
+
+        /* Autocomplete styling */
+        .pac-container {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            margin-top: 4px;
+        }
+
+        .pac-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-top: 1px solid var(--border);
+        }
+
+        .pac-item:first-child {
+            border-top: none;
+        }
+
+        .pac-item:hover {
+            background: var(--bg);
+        }
+
+        .pac-icon {
+            display: none;
+        }
+
+        .pac-item-query {
+            font-size: 0.95rem;
+            color: var(--text);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏠 Créer un Devis CECB</h1>
+            <p class="subtitle">Générer automatiquement un devis CECB, CECB Plus ou Conseil Incitatif dans Bexio</p>
+        </header>
+
+        <div class="form-container">
+            <!-- Panneau du formulaire -->
+            <div class="form-panel">
+                <div class="info-box">
+                    💡 <strong>Astuce :</strong> Les champs d'adresse utilisent l'autocomplétion Google. Commencez à taper et sélectionnez l'adresse suggérée.
+                </div>
+
+                <form id="devisForm">
+                    <!-- SECTION 1: COORDONNÉES CLIENT -->
+                    <div class="section">
+                        <div class="section-title">👤 Coordonnées du client</div>
+
+                        <div class="form-group">
+                            <label for="type_contact">Type de contact <span class="required">*</span></label>
+                            <select id="type_contact" name="type_contact" required>
+                                <option value="Privé">Privé</option>
+                                <option value="Société">Société</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group hidden" id="group_nom_entreprise">
+                            <label for="nom_entreprise">Nom de l'entreprise <span class="required">*</span></label>
+                            <input type="text" id="nom_entreprise" name="nom_entreprise">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="appellation">Appellation <span class="required">*</span></label>
+                            <select id="appellation" name="appellation" required>
+                                <option value="Mme">Madame</option>
+                                <option value="M.">Monsieur</option>
+                                <option value="Mx">Neutre</option>
+                            </select>
+                        </div>
+
+                        <div class="row">
+                            <div class="form-group">
+                                <label for="nom_famille">Nom de famille <span class="required">*</span></label>
+                                <input type="text" id="nom_famille" name="nom_famille" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="prenom">Prénom <span class="required">*</span></label>
+                                <input type="text" id="prenom" name="prenom" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="form-group">
+                                <label for="email">Email <span class="required">*</span></label>
+                                <input type="email" id="email" name="email" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="telephone">Téléphone</label>
+                                <input type="tel" id="telephone" name="telephone" placeholder="+41 79 123 45 67">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 2: ADRESSE DE FACTURATION -->
+                    <div class="section">
+                        <div class="section-title">📍 Adresse de facturation</div>
+
+                        <div class="form-group">
+                            <label for="rue_facturation">Adresse complète <span class="required">*</span></label>
+                            <input type="text" id="rue_facturation" name="rue_facturation" placeholder="Commencez à taper l'adresse..." required>
+                        </div>
+
+                        <div class="row">
+                            <div class="form-group">
+                                <label for="npa_facturation">NPA <span class="required">*</span></label>
+                                <input type="text" id="npa_facturation" name="npa_facturation" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="localite_facturation">Localité <span class="required">*</span></label>
+                                <input type="text" id="localite_facturation" name="localite_facturation" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="pays_facturation">Pays</label>
+                            <input type="text" id="pays_facturation" name="pays_facturation" value="Suisse">
+                        </div>
+                    </div>
+
+                    <!-- SECTION 3: ADRESSE DU BÂTIMENT -->
+                    <div class="section">
+                        <div class="section-title">🏢 Adresse du bâtiment</div>
+
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="adresse_identique" name="adresse_identique">
+                            <label for="adresse_identique">Identique à l'adresse de facturation</label>
+                        </div>
+
+                        <div id="adresse_batiment_fields">
+                            <div class="form-group">
+                                <label for="rue_batiment">Adresse complète du bâtiment <span class="required">*</span></label>
+                                <input type="text" id="rue_batiment" name="rue_batiment" placeholder="Commencez à taper l'adresse..." required>
+                            </div>
+
+                            <div class="row">
+                                <div class="form-group">
+                                    <label for="npa_batiment">NPA <span class="required">*</span></label>
+                                    <input type="text" id="npa_batiment" name="npa_batiment" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="localite_batiment">Localité <span class="required">*</span></label>
+                                    <input type="text" id="localite_batiment" name="localite_batiment" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 4: CARACTÉRISTIQUES DU BÂTIMENT -->
+                    <div class="section">
+                        <div class="section-title">🔧 Caractéristiques du bâtiment</div>
+
+                        <div class="form-group">
+                            <label for="type_certificat">Type de certificat <span class="required">*</span></label>
+                            <select id="type_certificat" name="type_certificat" required>
+                                <option value="CECB">CECB</option>
+                                <option value="CECB Plus">CECB Plus</option>
+                                <option value="Conseil Incitatif">Conseil Incitatif</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="nombre_etages">Nombre d'étages hors-sol <span class="required">*</span></label>
+                            <input type="number" id="nombre_etages" name="nombre_etages" min="1" max="20" value="2" required>
+                            <small style="color: #64748b; font-size: 0.85rem; display: block; margin-top: 0.25rem;">
+                                Valeur du RegBL. Modifiable si incorrecte.
+                            </small>
+                        </div>
+
+                        <div class="row">
+                            <div class="form-group">
+                                <label for="sous_sol">Niveaux en sous-sol</label>
+                                <select id="sous_sol" name="sous_sol">
+                                    <option value="Non chauffé ou inexistant">Non chauffé ou inexistant</option>
+                                    <option value="Partiellement chauffé 50%">Partiellement chauffé 50%</option>
+                                    <option value="Chauffé 30%">Chauffé 30%</option>
+                                    <option value="Chauffé">Chauffé</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="combles">Combles</label>
+                                <select id="combles" name="combles">
+                                    <option value="Non chauffé ou inexistant">Non chauffé ou inexistant</option>
+                                    <option value="Partiellement chauffé 50%">Partiellement chauffé 50%</option>
+                                    <option value="Chauffé 30%">Chauffé 30%</option>
+                                    <option value="Chauffé">Chauffé</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group" id="group_delai">
+                            <label for="delai">Délai</label>
+                            <select id="delai" name="delai">
+                                <option value="Normal">Normal</option>
+                                <option value="Express (+135 CHF)">Express (+135 CHF)</option>
+                                <option value="Urgent (+270 CHF)">Urgent (+270 CHF)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="contexte">Contexte</label>
+                            <select id="contexte" name="contexte">
+                                <option value="Vente">Vente</option>
+                                <option value="Remplacement de chaudière fossile">Remplacement de chaudière fossile</option>
+                                <option value="Réflexion/entretien du bien">Réflexion/entretien du bien</option>
+                                <option value="Travaux de rénovation">Travaux de rénovation</option>
+                                <option value="Projet de loi sur l'Energie (VD)">Projet de loi sur l'Energie (VD)</option>
+                                <option value="Autre">Autre</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="message">Message (optionnel)</label>
+                            <textarea id="message" name="message" placeholder="Informations complémentaires..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- BOUTONS -->
+                    <div class="button-group">
+                        <button type="button" class="btn btn-secondary" onclick="window.location.href='/'">Annuler</button>
+                        <button type="submit" class="btn btn-primary" id="submitBtn">Créer le devis</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Panneau des logs -->
+            <div class="logs-panel">
+                <h2>📋 Logs d'exécution</h2>
+                <div id="logs" class="logs-container">
+                    <p class="log-placeholder">En attente de création...</p>
+                </div>
+                <button onclick="clearLogs()" class="clear-btn">🗑️ Effacer les logs</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========================================
+        // SYSTÈME DE LOGS
+        // ========================================
+        const logsContainer = document.getElementById('logs');
+
+        function addLog(message, type = 'info') {
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+
+            const timestamp = new Date().toLocaleTimeString('fr-CH');
+            logEntry.innerHTML = `<span class="log-time">[${timestamp}]</span> ${message}`;
+
+            // Retire le placeholder si présent
+            const placeholder = logsContainer.querySelector('.log-placeholder');
+            if (placeholder) placeholder.remove();
+
+            logsContainer.appendChild(logEntry);
+            logsContainer.scrollTop = logsContainer.scrollHeight;
+        }
+
+        function clearLogs() {
+            logsContainer.innerHTML = '<p class="log-placeholder">Logs effacés...</p>';
+        }
+
+        // Log de chargement
+        window.addEventListener('load', () => {
+            addLog('✅ Formulaire de création de devis chargé', 'success');
+            addLog('🗺️  Autocomplétion Google Places activée', 'info');
+
+            // Pré-remplir le formulaire depuis les paramètres URL
+            prefillFormFromURL();
+        });
+
+        // ========================================
+        // PRÉ-REMPLISSAGE DEPUIS URL
+        // ========================================
+        function prefillFormFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            let prefillCount = 0;
+
+            // Parcourir tous les paramètres URL
+            urlParams.forEach((value, key) => {
+                const field = document.getElementById(key);
+                if (field) {
+                    // Décoder la valeur (pour gérer les espaces, accents, etc.)
+                    const decodedValue = decodeURIComponent(value);
+                    field.value = decodedValue;
+                    prefillCount++;
+
+                    // Déclencher l'événement change pour les select
+                    if (field.tagName === 'SELECT') {
+                        field.dispatchEvent(new Event('change'));
+                    }
+                }
+            });
+
+            if (prefillCount > 0) {
+                addLog(`🔗 ${prefillCount} champ(s) pré-rempli(s) depuis l'URL`, 'success');
+            }
+        }
+
+        // ========================================
+        // GOOGLE PLACES AUTOCOMPLETE
+        // ========================================
+        let autocompleteFacturation, autocompleteBatiment;
+
+        function initAutocomplete() {
+            const optionsSwiss = {
+                componentRestrictions: { country: 'ch' },
+                fields: ['address_components', 'formatted_address', 'geometry'],
+                types: ['address']
+            };
+
+            // Autocomplete pour adresse de facturation
+            autocompleteFacturation = new google.maps.places.Autocomplete(
+                document.getElementById('rue_facturation'),
+                optionsSwiss
+            );
+
+            autocompleteFacturation.addListener('place_changed', () => {
+                const place = autocompleteFacturation.getPlace();
+                fillAddressFields(place, 'facturation');
+            });
+
+            // Autocomplete pour adresse du bâtiment
+            autocompleteBatiment = new google.maps.places.Autocomplete(
+                document.getElementById('rue_batiment'),
+                optionsSwiss
+            );
+
+            autocompleteBatiment.addListener('place_changed', () => {
+                const place = autocompleteBatiment.getPlace();
+                fillAddressFields(place, 'batiment');
+            });
+        }
+
+        function fillAddressFields(place, type) {
+            if (!place.address_components) {
+                addLog(`⚠️  Adresse ${type} incomplète`, 'error');
+                return;
+            }
+
+            let streetNumber = '';
+            let route = '';
+            let postalCode = '';
+            let locality = '';
+
+            // Extraire les composants de l'adresse
+            for (const component of place.address_components) {
+                const componentType = component.types[0];
+
+                switch (componentType) {
+                    case 'street_number':
+                        streetNumber = component.long_name;
+                        break;
+                    case 'route':
+                        route = component.long_name;
+                        break;
+                    case 'postal_code':
+                        postalCode = component.long_name;
+                        break;
+                    case 'locality':
+                        locality = component.long_name;
+                        break;
+                }
+            }
+
+            // Remplir les champs
+            const rueComplete = `${route} ${streetNumber}`.trim();
+            document.getElementById(`rue_${type}`).value = rueComplete;
+            document.getElementById(`npa_${type}`).value = postalCode;
+            document.getElementById(`localite_${type}`).value = locality;
+
+            addLog(`✅ Adresse ${type} complétée: ${rueComplete}, ${postalCode} ${locality}`, 'success');
+
+            // Si "adresse identique" est cochée, copier vers bâtiment
+            if (type === 'facturation' && document.getElementById('adresse_identique').checked) {
+                document.getElementById('rue_batiment').value = rueComplete;
+                document.getElementById('npa_batiment').value = postalCode;
+                document.getElementById('localite_batiment').value = locality;
+                // Récupérer les données du bâtiment
+                fetchBuildingData(rueComplete, postalCode, locality);
+            }
+
+            // Si c'est l'adresse du bâtiment, récupérer les données du RegBL
+            if (type === 'batiment') {
+                fetchBuildingData(rueComplete, postalCode, locality);
+            }
+        }
+
+        // Fonction pour récupérer les données du bâtiment depuis le RegBL
+        async function fetchBuildingData(adresse, npa, localite) {
+            try {
+                addLog('🔍 Recherche des données du bâtiment dans le RegBL...', 'info');
+
+                const response = await fetch('/api/building_data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        adresse: adresse,
+                        npa: npa,
+                        localite: localite
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.data) {
+                    const gastw = data.data.gastw;
+                    if (gastw) {
+                        document.getElementById('nombre_etages').value = gastw;
+                        addLog(`✅ Nombre d'étages du RegBL: ${gastw}`, 'success');
+                    }
+                } else {
+                    addLog('⚠️  Bâtiment non trouvé dans le RegBL - valeur par défaut utilisée', 'warning');
+                }
+            } catch (error) {
+                console.error('Erreur lors de la récupération des données du bâtiment:', error);
+                addLog('⚠️  Erreur lors de la recherche dans le RegBL', 'warning');
+            }
+        }
+
+        // Initialiser l'autocomplete quand l'API Google est chargée
+        if (typeof google !== 'undefined') {
+            google.maps.event.addDomListener(window, 'load', initAutocomplete);
+        } else {
+            addLog('⚠️  API Google Maps non disponible - autocomplétion désactivée', 'error');
+        }
+
+        // ========================================
+        // GESTION DU FORMULAIRE
+        // ========================================
+
+        // Type de contact (Privé/Société)
+        const typeContactSelect = document.getElementById('type_contact');
+        const nomEntrepriseGroup = document.getElementById('group_nom_entreprise');
+        const nomEntrepriseInput = document.getElementById('nom_entreprise');
+
+        typeContactSelect.addEventListener('change', function() {
+            if (this.value === 'Société') {
+                nomEntrepriseGroup.classList.remove('hidden');
+                nomEntrepriseInput.required = true;
+                addLog('📋 Type de contact: Société', 'info');
+            } else {
+                nomEntrepriseGroup.classList.add('hidden');
+                nomEntrepriseInput.required = false;
+                addLog('📋 Type de contact: Privé', 'info');
+            }
+        });
+
+        // Copie d'adresse
+        const adresseIdentiqueCheckbox = document.getElementById('adresse_identique');
+        const adresseBatimentFields = document.getElementById('adresse_batiment_fields');
+        const rueFacturation = document.getElementById('rue_facturation');
+        const npaFacturation = document.getElementById('npa_facturation');
+        const localiteFacturation = document.getElementById('localite_facturation');
+        const rueBatiment = document.getElementById('rue_batiment');
+        const npaBatiment = document.getElementById('npa_batiment');
+        const localiteBatiment = document.getElementById('localite_batiment');
+
+        adresseIdentiqueCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                adresseBatimentFields.classList.add('hidden');
+                rueBatiment.required = false;
+                npaBatiment.required = false;
+                localiteBatiment.required = false;
+
+                // Copier les valeurs
+                rueBatiment.value = rueFacturation.value;
+                npaBatiment.value = npaFacturation.value;
+                localiteBatiment.value = localiteFacturation.value;
+
+                addLog('✅ Adresse de facturation copiée vers bâtiment', 'success');
+
+                // Récupérer les données du bâtiment si l'adresse est complète
+                if (rueBatiment.value && npaBatiment.value && localiteBatiment.value) {
+                    fetchBuildingData(rueBatiment.value, npaBatiment.value, localiteBatiment.value);
+                }
+            } else {
+                adresseBatimentFields.classList.remove('hidden');
+                rueBatiment.required = true;
+                npaBatiment.required = true;
+                localiteBatiment.required = true;
+                addLog('📋 Adresse du bâtiment à remplir séparément', 'info');
+            }
+        });
+
+        // Copie automatique pendant la saisie
+        [rueFacturation, npaFacturation, localiteFacturation].forEach(input => {
+            input.addEventListener('input', function() {
+                if (adresseIdentiqueCheckbox.checked) {
+                    rueBatiment.value = rueFacturation.value;
+                    npaBatiment.value = npaFacturation.value;
+                    localiteBatiment.value = localiteFacturation.value;
+                }
+            });
+        });
+
+        // Gestion du délai selon le type de certificat
+        const typeCertificatSelect = document.getElementById('type_certificat');
+        const delaiGroup = document.getElementById('group_delai');
+
+        typeCertificatSelect.addEventListener('change', function() {
+            if (this.value === 'Conseil Incitatif') {
+                delaiGroup.classList.add('hidden');
+                addLog('📋 Type: Conseil Incitatif (gratuit)', 'info');
+            } else {
+                delaiGroup.classList.remove('hidden');
+                addLog(`📋 Type: ${this.value}`, 'info');
+            }
+        });
+
+        // ========================================
+        // SOUMISSION DU FORMULAIRE
+        // ========================================
+        const form = document.getElementById('devisForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // Préparer les données
+            const formData = new FormData(form);
+            const data = {};
+            formData.forEach((value, key) => {
+                data[key] = value;
+            });
+
+            // Si adresse identique, copier les valeurs
+            if (adresseIdentiqueCheckbox.checked) {
+                data.rue_batiment = data.rue_facturation;
+                data.npa_batiment = data.npa_facturation;
+                data.localite_batiment = data.localite_facturation;
+            }
+
+            // Désactiver le bouton
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Création en cours...';
+
+            addLog('🚀 Lancement de la création du devis...', 'info');
+            addLog(`👤 Contact: ${data.prenom} ${data.nom_famille}`, 'info');
+            addLog(`🏠 Bâtiment: ${data.rue_batiment}, ${data.npa_batiment} ${data.localite_batiment}`, 'info');
+            addLog(`📋 Type: ${data.type_certificat}`, 'info');
+
+            try {
+                const response = await fetch('/run_script', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        script_id: 'creer_devis',
+                        args: {
+                            form_data: JSON.stringify(data)
+                        }
+                    })
+                });
+
+                const responseData = await response.json();
+
+                // Réactiver le bouton
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Créer le devis';
+
+                if (responseData.success) {
+                    addLog(`✅ <strong>Devis créé avec succès !</strong> (${responseData.duration})`, 'success');
+                    if (responseData.stdout) {
+                        // Afficher le stdout ligne par ligne
+                        const lines = responseData.stdout.split('\n');
+                        lines.forEach(line => {
+                            if (line.trim()) {
+                                addLog(line, 'output');
+                            }
+                        });
+                    }
+                    addLog('🎉 Vous pouvez maintenant consulter le devis dans Bexio', 'success');
+                } else {
+                    addLog(`❌ <strong>Erreur lors de la création du devis</strong>`, 'error');
+                    if (responseData.stderr) {
+                        addLog(`<pre>${responseData.stderr}</pre>`, 'error');
+                    }
+                    if (responseData.stdout) {
+                        addLog('📋 Sortie du script:', 'info');
+                        addLog(`<pre>${responseData.stdout}</pre>`, 'output');
+                    }
+                    if (responseData.error) {
+                        addLog(`Erreur: ${responseData.error}`, 'error');
+                    }
+                }
+
+            } catch (error) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Créer le devis';
+                addLog(`❌ Erreur réseau: ${error.message}`, 'error');
+                addLog('Vérifiez que le serveur Flask est bien démarré.', 'error');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liens de Test - Formulaire CECB</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .test-container {
+            max-width: 900px;
+            margin: 2rem auto;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 2rem;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        .back-link:hover {
+            transform: translateX(-5px);
+        }
+
+        .info-box {
+            background: #edf2f7;
+            border-left: 4px solid var(--primary);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .test-section {
+            margin-bottom: 2.5rem;
+        }
+
+        .test-section h2 {
+            color: var(--text);
+            font-size: 1.4rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .test-card {
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .test-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+        }
+
+        .test-card h3 {
+            color: var(--text);
+            margin-bottom: 0.75rem;
+            font-size: 1.1rem;
+        }
+
+        .test-card p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+
+        .test-card a {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .test-card a:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .params-details {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .params-details h4 {
+            color: var(--text);
+            font-size: 0.9rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .params-details ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .params-details li {
+            padding: 0.4rem 0;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-family: 'Courier New', monospace;
+        }
+
+        .params-details li strong {
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="test-container">
+            <a href="/" class="back-link">← Retour au tableau de bord</a>
+
+            <header>
+                <h1>🧪 Liens de Test - Formulaire CECB</h1>
+                <p class="subtitle">Liens avec pré-remplissage automatique des champs du formulaire</p>
+            </header>
+
+            <div class="info-box">
+                <p><strong>💡 Comment ça marche ?</strong><br>
+                Les liens ci-dessous contiennent des paramètres d'URL qui pré-remplissent automatiquement le formulaire. Cliquez sur un lien pour tester la création de devis.</p>
+            </div>
+
+            <!-- CECB -->
+            <div class="test-section">
+                <h2>📋 Test CECB Standard</h2>
+
+                <div class="test-card">
+                    <h3>🏠 CECB - Contact Privé - M. Dupont</h3>
+                    <p>Formulaire pré-rempli pour un certificat CECB standard avec un contact privé.</p>
+                    <a href="/devis/nouveau?type_contact=Priv%C3%A9&appellation=M.&nom_famille=Dupont&prenom=Jean&email=jean.dupont%40example.com&telephone=%2B41791234567&rue_facturation=Route%20de%20l%27H%C3%B4pital%2016b&npa_facturation=1180&localite_facturation=Rolle&rue_batiment=Chemin%20des%20Vignes%2025&npa_batiment=1110&localite_batiment=Morges&type_certificat=CECB&nombre_etages=2&delai=Normal&contexte=Vente">
+                        🚀 Ouvrir le formulaire CECB
+                    </a>
+
+                    <div class="params-details">
+                        <h4>Champs pré-remplis :</h4>
+                        <ul>
+                            <li><strong>Type:</strong> Privé</li>
+                            <li><strong>Contact:</strong> M. Jean Dupont</li>
+                            <li><strong>Email:</strong> jean.dupont@example.com</li>
+                            <li><strong>Téléphone:</strong> +41791234567</li>
+                            <li><strong>Facturation:</strong> Route de l'Hôpital 16b, 1180 Rolle</li>
+                            <li><strong>Bâtiment:</strong> Chemin des Vignes 25, 1110 Morges</li>
+                            <li><strong>Certificat:</strong> CECB</li>
+                            <li><strong>Étages:</strong> 2</li>
+                            <li><strong>Délai:</strong> Normal</li>
+                            <li><strong>Contexte:</strong> Vente</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="test-card">
+                    <h3>🏢 CECB - Contact Société - ABC SA</h3>
+                    <p>Formulaire pré-rempli pour un certificat CECB avec un contact société.</p>
+                    <a href="/devis/nouveau?type_contact=Soci%C3%A9t%C3%A9&nom_entreprise=ABC%20SA&appellation=Mme&nom_famille=Martin&prenom=Sophie&email=sophie.martin%40abc.ch&telephone=%2B41227654321&rue_facturation=Avenue%20de%20la%20Gare%2045&npa_facturation=1003&localite_facturation=Lausanne&rue_batiment=Rue%20du%20Commerce%2078&npa_batiment=1003&localite_batiment=Lausanne&type_certificat=CECB&nombre_etages=3&delai=Express%20%28%2B135%20CHF%29&contexte=Travaux%20de%20r%C3%A9novation">
+                        🚀 Ouvrir le formulaire CECB (Société)
+                    </a>
+
+                    <div class="params-details">
+                        <h4>Champs pré-remplis :</h4>
+                        <ul>
+                            <li><strong>Type:</strong> Société</li>
+                            <li><strong>Entreprise:</strong> ABC SA</li>
+                            <li><strong>Contact:</strong> Mme Sophie Martin</li>
+                            <li><strong>Email:</strong> sophie.martin@abc.ch</li>
+                            <li><strong>Téléphone:</strong> +41227654321</li>
+                            <li><strong>Facturation:</strong> Avenue de la Gare 45, 1003 Lausanne</li>
+                            <li><strong>Bâtiment:</strong> Rue du Commerce 78, 1003 Lausanne</li>
+                            <li><strong>Certificat:</strong> CECB</li>
+                            <li><strong>Étages:</strong> 3</li>
+                            <li><strong>Délai:</strong> Express (+135 CHF)</li>
+                            <li><strong>Contexte:</strong> Travaux de rénovation</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CECB PLUS -->
+            <div class="test-section">
+                <h2>⭐ Test CECB Plus</h2>
+
+                <div class="test-card">
+                    <h3>🏠 CECB Plus - Contact Privé - Mme Blanc</h3>
+                    <p>Formulaire pré-rempli pour un certificat CECB Plus avec contact privé.</p>
+                    <a href="/devis/nouveau?type_contact=Priv%C3%A9&appellation=Mme&nom_famille=Blanc&prenom=Marie&email=marie.blanc%40example.com&telephone=%2B41799876543&rue_facturation=Rue%20du%20Lac%2012&npa_facturation=1800&localite_facturation=Vevey&rue_batiment=Chemin%20de%20la%20Colline%207&npa_batiment=1820&localite_batiment=Montreux&type_certificat=CECB%20Plus&nombre_etages=2&delai=Urgent%20%28%2B270%20CHF%29&contexte=Remplacement%20de%20chaudi%C3%A8re%20fossile">
+                        🚀 Ouvrir le formulaire CECB Plus
+                    </a>
+
+                    <div class="params-details">
+                        <h4>Champs pré-remplis :</h4>
+                        <ul>
+                            <li><strong>Type:</strong> Privé</li>
+                            <li><strong>Contact:</strong> Mme Marie Blanc</li>
+                            <li><strong>Email:</strong> marie.blanc@example.com</li>
+                            <li><strong>Téléphone:</strong> +41799876543</li>
+                            <li><strong>Facturation:</strong> Rue du Lac 12, 1800 Vevey</li>
+                            <li><strong>Bâtiment:</strong> Chemin de la Colline 7, 1820 Montreux</li>
+                            <li><strong>Certificat:</strong> CECB Plus</li>
+                            <li><strong>Étages:</strong> 2</li>
+                            <li><strong>Délai:</strong> Urgent (+270 CHF)</li>
+                            <li><strong>Contexte:</strong> Remplacement de chaudière fossile</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="test-card">
+                    <h3>🏢 CECB Plus - Contact Société - XYZ Immobilier</h3>
+                    <p>Formulaire pré-rempli pour un certificat CECB Plus avec contact société.</p>
+                    <a href="/devis/nouveau?type_contact=Soci%C3%A9t%C3%A9&nom_entreprise=XYZ%20Immobilier%20SA&appellation=M.&nom_famille=Rochat&prenom=Pierre&email=pierre.rochat%40xyz-immo.ch&telephone=%2B41215551234&rue_facturation=Place%20de%20la%20Gare%209&npa_facturation=1020&localite_facturation=Renens&rue_batiment=Avenue%20des%20Alpes%2034&npa_batiment=1814&localite_batiment=La%20Tour-de-Peilz&type_certificat=CECB%20Plus&nombre_etages=4&delai=Normal&contexte=Projet%20de%20loi%20sur%20l%27Energie%20%28VD%29">
+                        🚀 Ouvrir le formulaire CECB Plus (Société)
+                    </a>
+
+                    <div class="params-details">
+                        <h4>Champs pré-remplis :</h4>
+                        <ul>
+                            <li><strong>Type:</strong> Société</li>
+                            <li><strong>Entreprise:</strong> XYZ Immobilier SA</li>
+                            <li><strong>Contact:</strong> M. Pierre Rochat</li>
+                            <li><strong>Email:</strong> pierre.rochat@xyz-immo.ch</li>
+                            <li><strong>Téléphone:</strong> +41215551234</li>
+                            <li><strong>Facturation:</strong> Place de la Gare 9, 1020 Renens</li>
+                            <li><strong>Bâtiment:</strong> Avenue des Alpes 34, 1814 La Tour-de-Peilz</li>
+                            <li><strong>Certificat:</strong> CECB Plus</li>
+                            <li><strong>Étages:</strong> 4</li>
+                            <li><strong>Délai:</strong> Normal</li>
+                            <li><strong>Contexte:</strong> Projet de loi sur l'Energie (VD)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Conseil Incitatif -->
+            <div class="test-section">
+                <h2>💡 Test Conseil Incitatif</h2>
+
+                <div class="test-card">
+                    <h3>🏠 Conseil Incitatif - Contact Privé</h3>
+                    <p>Formulaire pré-rempli pour un conseil incitatif.</p>
+                    <a href="/devis/nouveau?type_contact=Priv%C3%A9&appellation=M.&nom_famille=Dubois&prenom=Laurent&email=laurent.dubois%40example.com&telephone=%2B41786543210&rue_facturation=Chemin%20du%20Bois%2033&npa_facturation=1260&localite_facturation=Nyon&rue_batiment=Route%20de%20Divonne%2051&npa_batiment=1260&localite_batiment=Nyon&type_certificat=Conseil%20Incitatif&nombre_etages=2&contexte=Remplacement%20de%20chaudi%C3%A8re%20fossile">
+                        🚀 Ouvrir le formulaire Conseil Incitatif
+                    </a>
+
+                    <div class="params-details">
+                        <h4>Champs pré-remplis :</h4>
+                        <ul>
+                            <li><strong>Type:</strong> Privé</li>
+                            <li><strong>Contact:</strong> M. Laurent Dubois</li>
+                            <li><strong>Email:</strong> laurent.dubois@example.com</li>
+                            <li><strong>Téléphone:</strong> +41786543210</li>
+                            <li><strong>Facturation:</strong> Chemin du Bois 33, 1260 Nyon</li>
+                            <li><strong>Bâtiment:</strong> Route de Divonne 51, 1260 Nyon</li>
+                            <li><strong>Certificat:</strong> Conseil Incitatif</li>
+                            <li><strong>Étages:</strong> 2</li>
+                            <li><strong>Contexte:</strong> Remplacement de chaudière fossile</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

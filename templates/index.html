@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de bord Êta Consult Sàrl</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="header-left">
+                    <h1>📊 Tableau de bord Êta Consult Sàrl</h1>
+                    <p class="subtitle">Gestion des devis CECB et automatisation</p>
+                </div>
+                <div class="header-right">
+                    <nav class="admin-nav">
+                        {% if current_user.is_admin() %}
+                        <a href="/admin/tarifs" class="admin-link" title="Gérer les tarifs">⚙️ Tarifs</a>
+                        <a href="/admin/textes" class="admin-link" title="Gérer les textes des devis">📝 Textes</a>
+                        <a href="/tests" class="admin-link" title="Liens de test avec formulaires pré-remplis">🧪 Tests</a>
+                        <a href="/admin/users" class="admin-link" title="Gérer les utilisateurs">👥 Utilisateurs</a>
+                        {% endif %}
+                        <a href="/devis/nouveau" class="admin-link devis-link" title="Créer un nouveau devis">➕ Nouveau Devis</a>
+                        <span class="user-info" title="Utilisateur connecté">👤 {{ current_user.email }}</span>
+                        <a href="/logout" class="admin-link logout-link" title="Se déconnecter">🚪 Déconnexion</a>
+                    </nav>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <!-- Panneau des scripts -->
+            <div class="scripts-panel">
+                <h2>Scripts disponibles</h2>
+                
+                {% set categories = {} %}
+                {% for script_id, script in scripts.items() %}
+                    {% set category = script.category %}
+                    {% if category not in categories %}
+                        {% set _ = categories.update({category: []}) %}
+                    {% endif %}
+                    {% set _ = categories[category].append((script_id, script)) %}
+                {% endfor %}
+
+                {% for category, category_scripts in categories.items() %}
+                <div class="category">
+                    <h3>{{ category }}</h3>
+                    <div class="scripts-grid">
+                        {% for script_id, script in category_scripts %}
+                        <div class="script-card">
+                            <div class="script-header">
+                                <h4>{{ script.name }}</h4>
+                                <div class="script-header-right">
+                                    <button class="info-btn" onclick="showInfo('{{ script_id }}')" title="Informations">ℹ️</button>
+                                    <span class="script-status" id="status-{{ script_id }}">●</span>
+                                </div>
+                            </div>
+                            <p class="script-description">{{ script.description }}</p>
+                            
+                            {% if script.args %}
+                            <div class="script-args">
+                                {% for arg in script.args %}
+                                <input 
+                                    type="text" 
+                                    id="arg-{{ script_id }}-{{ arg }}" 
+                                    placeholder="{{ arg }}"
+                                    class="arg-input"
+                                >
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            
+                            <button 
+                                class="run-btn" 
+                                onclick="runScript('{{ script_id }}')"
+                                id="btn-{{ script_id }}"
+                            >
+                                ▶ Exécuter
+                            </button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Panneau des logs -->
+            <div class="logs-panel">
+                <h2>📋 Logs d'exécution</h2>
+                <div id="logs" class="logs-container">
+                    <p class="log-placeholder">En attente d'exécution...</p>
+                </div>
+                <button onclick="clearLogs()" class="clear-btn">🗑️ Effacer les logs</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Info -->
+    <div id="infoModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Informations du script</h2>
+                <span class="close" onclick="closeInfo()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="info-row">
+                    <strong>Nom:</strong>
+                    <span id="infoName"></span>
+                </div>
+                <div class="info-row">
+                    <strong>Catégorie:</strong>
+                    <span id="infoCategory"></span>
+                </div>
+                <div class="info-row vertical">
+                    <strong>Description:</strong>
+                    <span id="infoDescription"></span>
+                </div>
+                <div class="info-row" id="infoArgsRow" style="display: none;">
+                    <strong>Arguments requis:</strong>
+                    <span id="infoArgs"></span>
+                </div>
+                <div class="info-row">
+                    <strong>Fichier:</strong>
+                    <span id="infoFile"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const logsContainer = document.getElementById('logs');
+
+        function addLog(message, type = 'info') {
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            
+            const timestamp = new Date().toLocaleTimeString('fr-CH');
+            logEntry.innerHTML = `<span class="log-time">[${timestamp}]</span> ${message}`;
+            
+            // Retire le placeholder si présent
+            const placeholder = logsContainer.querySelector('.log-placeholder');
+            if (placeholder) placeholder.remove();
+            
+            logsContainer.appendChild(logEntry);
+            logsContainer.scrollTop = logsContainer.scrollHeight;
+        }
+
+        function clearLogs() {
+            logsContainer.innerHTML = '<p class="log-placeholder">Logs effacés...</p>';
+        }
+
+        function setScriptStatus(scriptId, status) {
+            const statusDot = document.getElementById(`status-${scriptId}`);
+            const btn = document.getElementById(`btn-${scriptId}`);
+            
+            statusDot.className = 'script-status';
+            
+            switch(status) {
+                case 'running':
+                    statusDot.classList.add('running');
+                    btn.disabled = true;
+                    btn.textContent = '⏳ En cours...';
+                    break;
+                case 'success':
+                    statusDot.classList.add('success');
+                    btn.disabled = false;
+                    btn.textContent = '▶ Exécuter';
+                    setTimeout(() => {
+                        statusDot.className = 'script-status';
+                    }, 3000);
+                    break;
+                case 'error':
+                    statusDot.classList.add('error');
+                    btn.disabled = false;
+                    btn.textContent = '▶ Exécuter';
+                    setTimeout(() => {
+                        statusDot.className = 'script-status';
+                    }, 3000);
+                    break;
+                default:
+                    btn.disabled = false;
+                    btn.textContent = '▶ Exécuter';
+            }
+        }
+
+        async function runScript(scriptId) {
+            const scriptConfig = {{ scripts | tojson }};
+            const script = scriptConfig[scriptId];
+            
+            // Récupère les arguments si nécessaire
+            const args = {};
+            if (script.args) {
+                for (const arg of script.args) {
+                    const input = document.getElementById(`arg-${scriptId}-${arg}`);
+                    args[arg] = input.value;
+                }
+            }
+            
+            addLog(`🚀 Lancement du script: <strong>${script.name}</strong>`, 'info');
+            setScriptStatus(scriptId, 'running');
+            
+            try {
+                const response = await fetch('/run_script', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        script_id: scriptId,
+                        args: args
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    addLog(`✅ <strong>${script.name}</strong> terminé avec succès (${result.duration})`, 'success');
+                    if (result.stdout) {
+                        addLog(`<pre>${result.stdout}</pre>`, 'output');
+                    }
+                    setScriptStatus(scriptId, 'success');
+                } else {
+                    addLog(`❌ <strong>${script.name}</strong> a échoué`, 'error');
+                    if (result.stderr) {
+                        addLog(`<pre>${result.stderr}</pre>`, 'error');
+                    }
+                    if (result.error) {
+                        addLog(`Erreur: ${result.error}`, 'error');
+                    }
+                    setScriptStatus(scriptId, 'error');
+                }
+                
+            } catch (error) {
+                addLog(`❌ Erreur réseau: ${error.message}`, 'error');
+                setScriptStatus(scriptId, 'error');
+            }
+        }
+
+        // Log de démarrage
+        window.addEventListener('load', () => {
+            addLog('✅ Application prête. Sélectionne un script pour commencer.', 'success');
+        });
+
+        // Gestion du modal Info
+        function showInfo(scriptId) {
+            const scriptConfig = {{ scripts | tojson }};
+            const script = scriptConfig[scriptId];
+
+            document.getElementById('infoName').textContent = script.name;
+            document.getElementById('infoCategory').textContent = script.category;
+            document.getElementById('infoDescription').textContent = script.description_detaillee || script.description;
+            document.getElementById('infoFile').textContent = script.file;
+
+            // Afficher les arguments si présents
+            const argsRow = document.getElementById('infoArgsRow');
+            if (script.args && script.args.length > 0) {
+                document.getElementById('infoArgs').textContent = script.args.join(', ');
+                argsRow.style.display = 'block';
+            } else {
+                argsRow.style.display = 'none';
+            }
+
+            // Afficher le modal
+            document.getElementById('infoModal').style.display = 'block';
+        }
+
+        function closeInfo() {
+            document.getElementById('infoModal').style.display = 'none';
+        }
+
+        // Fermer le modal en cliquant en dehors
+        window.onclick = function(event) {
+            const modal = document.getElementById('infoModal');
+            if (event.target === modal) {
+                closeInfo();
+            }
+        }
+    </script>
+</body>
+</html>

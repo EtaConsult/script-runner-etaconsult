@@ -1,0 +1,34 @@
+nul
+
+# Configuration (contient les tokens API)
+config.py
+
+# Fichier des utilisateurs (contient les comptes et mots de passe hachés)
+users.json
+
+# Environnement virtuel Python
+venv/
+env/
+.venv/
+
+# Cache Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Fichiers de log
+*.log
+
+# Fichiers temporaires
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace

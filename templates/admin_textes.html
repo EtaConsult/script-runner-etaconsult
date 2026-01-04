@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration des Textes - Script Runner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #1976d2;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #856404;
+        }
+
+        .section {
+            margin-bottom: 35px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .section-title {
+            font-size: 18px;
+            color: #667eea;
+            margin-bottom: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 24px;
+            height: 24px;
+            background: #667eea;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .label-description {
+            font-size: 12px;
+            color: #666;
+            font-weight: 400;
+            margin-top: 2px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s;
+            font-family: 'Consolas', 'Monaco', monospace;
+            resize: vertical;
+            min-height: 150px;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        button {
+            flex: 1;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button[type="submit"] {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        button[type="button"] {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        button[type="button"]:hover {
+            background: #d0d0d0;
+        }
+
+        .result {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 6px;
+        }
+
+        .result.success {
+            display: block;
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .result.error {
+            display: block;
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .helper-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        .char-count {
+            font-size: 11px;
+            color: #999;
+            text-align: right;
+            margin-top: 3px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Administration des Textes</h1>
+        <p class="subtitle">Modifier les textes utilisés dans les devis CECB</p>
+
+        <div class="info-box">
+            <strong>ℹ️ Information :</strong> Les modifications seront sauvegardées dans <code>textes.json</code> et <code>config.py</code>.
+            Ces textes seront utilisés pour tous les futurs devis créés via le Script Runner.
+        </div>
+
+        <div class="warning-box">
+            <strong>⚠️ Important :</strong> Utilisez <code>&lt;br&gt;</code> pour les retours à la ligne (Bexio ne supporte pas <code>\n</code>).
+            Exemple : <code>Ligne 1&lt;br&gt;Ligne 2&lt;br&gt;Ligne 3</code>
+        </div>
+
+        <form id="textesForm">
+            <!-- SECTION 1: FOOTER -->
+            <div class="section">
+                <div class="section-title">Pied de page (Footer)</div>
+
+                <div class="form-group">
+                    <label for="footer_acompte">
+                        Conditions de paiement
+                        <div class="label-description">Texte affiché en bas de tous les devis</div>
+                    </label>
+                    <textarea id="footer_acompte" name="footer_acompte" required>{{ textes.footer_acompte }}</textarea>
+                    <div class="char-count" id="count_footer_acompte"></div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: PRESTATIONS CECB -->
+            <div class="section">
+                <div class="section-title">Prestations CECB Simple</div>
+
+                <div class="form-group">
+                    <label for="prestations_incluses_cecb">
+                        Prestations incluses CECB
+                        <div class="label-description">Description détaillée des prestations pour un CECB simple</div>
+                    </label>
+                    <textarea id="prestations_incluses_cecb" name="prestations_incluses_cecb" required>{{ textes.prestations_incluses_cecb }}</textarea>
+                    <div class="char-count" id="count_prestations_incluses_cecb"></div>
+                    <div class="helper-text">Utilisez &lt;br&gt; pour les retours à la ligne</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="prestations_non_incluses_cecb">
+                        Prestations non-incluses CECB
+                        <div class="label-description">Liste des prestations qui ne sont pas comprises</div>
+                    </label>
+                    <textarea id="prestations_non_incluses_cecb" name="prestations_non_incluses_cecb" required>{{ textes.prestations_non_incluses_cecb }}</textarea>
+                    <div class="char-count" id="count_prestations_non_incluses_cecb"></div>
+                </div>
+            </div>
+
+            <!-- SECTION 3: PRESTATIONS CECB PLUS -->
+            <div class="section">
+                <div class="section-title">Prestations CECB Plus</div>
+
+                <div class="form-group">
+                    <label for="prestations_incluses_cecb_plus">
+                        Prestations incluses CECB Plus
+                        <div class="label-description">Description des prestations pour un CECB Plus</div>
+                    </label>
+                    <textarea id="prestations_incluses_cecb_plus" name="prestations_incluses_cecb_plus" required>{{ textes.prestations_incluses_cecb_plus }}</textarea>
+                    <div class="char-count" id="count_prestations_incluses_cecb_plus"></div>
+                    <div class="helper-text">Utilisez &lt;br&gt; pour les retours à la ligne</div>
+                </div>
+            </div>
+
+            <!-- SECTION 4: CONSEIL INCITATIF -->
+            <div class="section">
+                <div class="section-title">Conseil Incitatif</div>
+
+                <div class="form-group">
+                    <label for="prestations_incluses_conseil">
+                        Prestations incluses Conseil Incitatif
+                        <div class="label-description">Description des prestations pour le conseil incitatif</div>
+                    </label>
+                    <textarea id="prestations_incluses_conseil" name="prestations_incluses_conseil" required>{{ textes.prestations_incluses_conseil }}</textarea>
+                    <div class="char-count" id="count_prestations_incluses_conseil"></div>
+                    <div class="helper-text">Utilisez &lt;br&gt; pour les retours à la ligne</div>
+                </div>
+            </div>
+
+            <!-- BOUTONS -->
+            <div class="button-group">
+                <button type="button" onclick="window.location.href='/'">Retour</button>
+                <button type="submit">Sauvegarder</button>
+            </div>
+        </form>
+
+        <!-- RÉSULTAT -->
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('textesForm');
+        const result = document.getElementById('result');
+
+        // Compter les caractères
+        const textareas = document.querySelectorAll('textarea');
+        textareas.forEach(textarea => {
+            const countElement = document.getElementById(`count_${textarea.id}`);
+            if (countElement) {
+                const updateCount = () => {
+                    const count = textarea.value.length;
+                    countElement.textContent = `${count} caractères`;
+                };
+                textarea.addEventListener('input', updateCount);
+                updateCount();
+            }
+        });
+
+        // Soumission du formulaire
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // Préparer les données
+            const formData = new FormData(form);
+            const data = {};
+            formData.forEach((value, key) => {
+                data[key] = value;
+            });
+
+            try {
+                // Appel à l'API
+                const response = await fetch('/admin/textes', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const responseData = await response.json();
+
+                // Afficher le résultat
+                if (responseData.success) {
+                    result.className = 'result success';
+                    result.innerHTML = `
+                        <strong>✅ Textes sauvegardés avec succès !</strong>
+                        <p>Les modifications ont été enregistrées dans textes.json et config.py.</p>
+                    `;
+
+                    // Masquer le message après 3 secondes
+                    setTimeout(() => {
+                        result.style.display = 'none';
+                    }, 3000);
+                } else {
+                    result.className = 'result error';
+                    result.innerHTML = `
+                        <strong>❌ Erreur lors de la sauvegarde</strong>
+                        <p>${responseData.error || 'Une erreur est survenue'}</p>
+                    `;
+                }
+            } catch (error) {
+                result.className = 'result error';
+                result.innerHTML = `
+                    <strong>❌ Erreur de communication</strong>
+                    <p>${error.message}</p>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

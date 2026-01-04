@@ -1,0 +1,82 @@
+{
+  "quote_positions": {
+    "cecb_main": {
+      "title": "Etablissement d'un certificat CECB®",
+      "details_template": "- EGID n°{egid}<br>- {address}<br>- {layer_name} n°{gebnr}<br>- Parcelle n°{lparz}<br>- {floors} niveaux hors sol<br>- Surface au sol {surface} m²<br>- Année de construction : {year}"
+    },
+    "cecb_plus": {
+      "title": "Etablissement d'un certificat CECB® Plus, en sus",
+      "details_template": "- {address}"
+    },
+    "conseil_incitatif": {
+      "title": "Conseil incitatif Chauffez renouvelable®",
+      "details_template": "- EGID n°{egid}<br>- {address}"
+    },
+    "emission_fees": {
+      "title": "Frais d'émission du rapport CECB sur la plateforme (nouveaux tarifs à partir du 01.01.2026)",
+      "default_price": 80
+    },
+    "execution_surcharge": {
+      "title_template": "Forfait exécution {delai_label}"
+    }
+  },
+  "formatting": {
+    "address_format": "{rue}, CH {npa}, {localite}",
+    "egid_format": "EGID n°{egid}",
+    "building_info_format": "{layer_name} n°{gebnr}",
+    "parcel_format": "Parcelle n°{lparz}",
+    "floors_format": "{floors} niveaux hors sol",
+    "surface_format": "Surface au sol {surface} m²",
+    "year_format": "Année de construction : {year}"
+  },
+  "messages": {
+    "success": {
+      "quote_created": "✅ Offre créée avec succès",
+      "contact_created": "✅ Contact créé avec succès",
+      "building_found": "✅ Bâtiment trouvé dans la base de données",
+      "calculation_complete": "✅ Calcul des prix terminé"
+    },
+    "warnings": {
+      "building_not_found": "⚠️  Bâtiment non trouvé - utilisation de données par défaut",
+      "distance_calculation_failed": "⚠️  Impossible de calculer la distance - distance = 0 km",
+      "missing_config": "⚠️  Configuration manquante - utilisation des valeurs par défaut"
+    },
+    "errors": {
+      "api_error": "❌ Erreur API: {error}",
+      "validation_error": "❌ Erreur de validation: {error}",
+      "fatal_error": "❌ ERREUR FATALE: {error}"
+    }
+  },
+  "delais": {
+    "normal": {
+      "label": "Normal",
+      "surcharge": 0
+    },
+    "express": {
+      "label": "Express",
+      "surcharge": 135
+    },
+    "urgent": {
+      "label": "Urgent",
+      "surcharge": 270
+    }
+  },
+  "sous_sol_combles": {
+    "non_chauffe": {
+      "label": "Non chauffé ou inexistant",
+      "coefficient": 0
+    },
+    "partiellement_chauffe": {
+      "label": "Partiellement chauffé 50%",
+      "coefficient": 0.5
+    },
+    "chauffe_30": {
+      "label": "Chauffé 30%",
+      "coefficient": 0.3
+    },
+    "chauffe": {
+      "label": "Chauffé",
+      "coefficient": 1
+    }
+  }
+}

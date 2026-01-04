@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration des Tarifs - Script Runner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #1976d2;
+        }
+
+        .section {
+            margin-bottom: 35px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .section-title {
+            font-size: 18px;
+            color: #667eea;
+            margin-bottom: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 24px;
+            height: 24px;
+            background: #667eea;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .label-description {
+            font-size: 12px;
+            color: #666;
+            font-weight: 400;
+            margin-top: 2px;
+        }
+
+        input[type="number"],
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        button {
+            flex: 1;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button[type="submit"] {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        button[type="button"] {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        button[type="button"]:hover {
+            background: #d0d0d0;
+        }
+
+        .btn-reset {
+            background: #f44336 !important;
+            color: white !important;
+        }
+
+        .btn-reset:hover {
+            background: #d32f2f !important;
+        }
+
+        .result {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 6px;
+        }
+
+        .result.success {
+            display: block;
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .result.error {
+            display: block;
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .unit {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .current-value {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+
+        .current-value strong {
+            color: #856404;
+        }
+
+        @media (max-width: 768px) {
+            .row,
+            .row-3 {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Administration des Tarifs</h1>
+        <p class="subtitle">Modifier les paramètres tarifaires pour les devis CECB</p>
+
+        <div class="info-box">
+            <strong>ℹ️ Information :</strong> Les modifications seront sauvegardées dans le fichier <code>tarifs.json</code>.
+            Ces tarifs seront utilisés pour tous les futurs devis créés via le Script Runner.
+        </div>
+
+        <form id="tarifsForm">
+            <!-- SECTION 1: PRIX DE BASE -->
+            <div class="section">
+                <div class="section-title">Prix de base</div>
+
+                <div class="form-group">
+                    <label for="base_price">
+                        Prix de base CECB
+                        <div class="label-description">Montant de départ pour le calcul du prix CECB</div>
+                    </label>
+                    <div class="input-wrapper">
+                        <input type="number" id="base_price" name="base_price" value="{{ tarifs.base_price }}" required min="0" step="1">
+                        <span class="unit">CHF</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: FORFAITS KILOMÉTRIQUES -->
+            <div class="section">
+                <div class="section-title">Forfaits kilométriques</div>
+
+                <div class="row-3">
+                    <div class="form-group">
+                        <label for="km_factor_proche">
+                            Facteur km proche
+                            <div class="label-description">Si distance < seuil</div>
+                        </label>
+                        <input type="number" id="km_factor_proche" name="km_factor_proche" value="{{ tarifs.km_factor_proche }}" required min="0" step="0.1">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="km_factor_loin">
+                            Facteur km loin
+                            <div class="label-description">Si distance ≥ seuil</div>
+                        </label>
+                        <input type="number" id="km_factor_loin" name="km_factor_loin" value="{{ tarifs.km_factor_loin }}" required min="0" step="0.1">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="km_seuil">
+                            Seuil de distance
+                            <div class="label-description">Distance limite</div>
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="number" id="km_seuil" name="km_seuil" value="{{ tarifs.km_seuil }}" required min="0" step="1">
+                            <span class="unit">km</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 3: FORFAITS SURFACE -->
+            <div class="section">
+                <div class="section-title">Forfaits surface</div>
+
+                <div class="row-3">
+                    <div class="form-group">
+                        <label for="surface_factor_petit">
+                            Facteur surface petit
+                            <div class="label-description">Si S_eq < seuil</div>
+                        </label>
+                        <input type="number" id="surface_factor_petit" name="surface_factor_petit" value="{{ tarifs.surface_factor_petit }}" required min="0" step="0.1">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="surface_factor_grand">
+                            Facteur surface grand
+                            <div class="label-description">Si S_eq ≥ seuil</div>
+                        </label>
+                        <input type="number" id="surface_factor_grand" name="surface_factor_grand" value="{{ tarifs.surface_factor_grand }}" required min="0" step="0.1">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="surface_seuil">
+                            Seuil de surface
+                            <div class="label-description">Surface équivalente limite</div>
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="number" id="surface_seuil" name="surface_seuil" value="{{ tarifs.surface_seuil }}" required min="0" step="1">
+                            <span class="unit">m²</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 4: CECB PLUS -->
+            <div class="section">
+                <div class="section-title">CECB Plus</div>
+
+                <div class="row">
+                    <div class="form-group">
+                        <label for="plus_factor">
+                            Multiplicateur CECB Plus
+                            <div class="label-description">Coefficient appliqué au prix CECB</div>
+                        </label>
+                        <input type="number" id="plus_factor" name="plus_factor" value="{{ tarifs.plus_factor }}" required min="0" step="0.1">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="plus_price_max">
+                            Prix maximum CECB Plus
+                            <div class="label-description">Plafond de prix</div>
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="number" id="plus_price_max" name="plus_price_max" value="{{ tarifs.plus_price_max }}" required min="0" step="1">
+                            <span class="unit">CHF</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 5: FRAIS FIXES -->
+            <div class="section">
+                <div class="section-title">Frais fixes</div>
+
+                <div class="row">
+                    <div class="form-group">
+                        <label for="frais_emission_cecb">
+                            Frais d'émission CECB
+                            <div class="label-description">Frais plateforme CECB</div>
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="number" id="frais_emission_cecb" name="frais_emission_cecb" value="{{ tarifs.frais_emission_cecb }}" required min="0" step="1">
+                            <span class="unit">CHF</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="prix_conseil_incitatif">
+                            Prix Conseil Incitatif
+                            <div class="label-description">Gratuit par défaut</div>
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="number" id="prix_conseil_incitatif" name="prix_conseil_incitatif" value="{{ tarifs.prix_conseil_incitatif }}" required min="0" step="1">
+                            <span class="unit">CHF</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 6: FORFAITS DÉLAI -->
+            <div class="section">
+                <div class="section-title">Forfaits délai</div>
+
+                <div class="row-3">
+                    <div class="form-group">
+                        <label for="forfait_normal">
+                            Forfait Normal
+                            <div class="label-description">Sans supplément</div>
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="number" id="forfait_normal" name="forfait_normal" value="{{ tarifs.forfait_normal }}" required min="0" step="1">
+                            <span class="unit">CHF</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="forfait_express">
+                            Forfait Express
+                            <div class="label-description">Supplément délai court</div>
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="number" id="forfait_express" name="forfait_express" value="{{ tarifs.forfait_express }}" required min="0" step="1">
+                            <span class="unit">CHF</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="forfait_urgent">
+                            Forfait Urgent
+                            <div class="label-description">Supplément délai très court</div>
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="number" id="forfait_urgent" name="forfait_urgent" value="{{ tarifs.forfait_urgent }}" required min="0" step="1">
+                            <span class="unit">CHF</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BOUTONS -->
+            <div class="button-group">
+                <button type="button" onclick="window.location.href='/'">Retour</button>
+                <button type="button" class="btn-reset" onclick="resetToDefaults()">Réinitialiser</button>
+                <button type="submit">Sauvegarder</button>
+            </div>
+        </form>
+
+        <!-- RÉSULTAT -->
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('tarifsForm');
+        const result = document.getElementById('result');
+
+        // Soumission du formulaire
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // Préparer les données
+            const formData = new FormData(form);
+            const data = {};
+            formData.forEach((value, key) => {
+                // Convertir en nombre si c'est un champ numérique
+                data[key] = parseFloat(value);
+            });
+
+            try {
+                // Appel à l'API
+                const response = await fetch('/admin/tarifs', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const responseData = await response.json();
+
+                // Afficher le résultat
+                if (responseData.success) {
+                    result.className = 'result success';
+                    result.innerHTML = `
+                        <strong>✅ Tarifs sauvegardés avec succès !</strong>
+                        <p>Les modifications ont été enregistrées dans tarifs.json.</p>
+                    `;
+
+                    // Masquer le message après 3 secondes
+                    setTimeout(() => {
+                        result.style.display = 'none';
+                    }, 3000);
+                } else {
+                    result.className = 'result error';
+                    result.innerHTML = `
+                        <strong>❌ Erreur lors de la sauvegarde</strong>
+                        <p>${responseData.error || 'Une erreur est survenue'}</p>
+                    `;
+                }
+            } catch (error) {
+                result.className = 'result error';
+                result.innerHTML = `
+                    <strong>❌ Erreur de communication</strong>
+                    <p>${error.message}</p>
+                `;
+            }
+        });
+
+        // Réinitialiser aux valeurs par défaut
+        function resetToDefaults() {
+            if (confirm('Êtes-vous sûr de vouloir réinitialiser tous les tarifs aux valeurs par défaut ?')) {
+                const defaults = {
+                    base_price: 500,
+                    km_factor_proche: 0.9,
+                    km_factor_loin: 0.7,
+                    km_seuil: 25,
+                    surface_factor_petit: 0.6,
+                    surface_factor_grand: 0.5,
+                    surface_seuil: 750,
+                    plus_factor: 1.4,
+                    plus_price_max: 1989,
+                    frais_emission_cecb: 80,
+                    prix_conseil_incitatif: 0,
+                    forfait_normal: 0,
+                    forfait_express: 135,
+                    forfait_urgent: 270
+                };
+
+                // Remplir le formulaire avec les valeurs par défaut
+                Object.keys(defaults).forEach(key => {
+                    const input = document.getElementById(key);
+                    if (input) {
+                        input.value = defaults[key];
+                    }
+                });
+
+                result.className = 'result';
+                result.innerHTML = `
+                    <strong>ℹ️ Valeurs réinitialisées</strong>
+                    <p>Les champs ont été remplis avec les valeurs par défaut. Cliquez sur "Sauvegarder" pour confirmer.</p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
