@@ -287,7 +287,7 @@ class QuotePositionBuilder:
             amount=1,
             unit_price=self.tarifs["conseil_restitution_cecb_plus"],
             tax_id=self.bexio_ids["tax_id"],
-            unit_id=self.bexio_ids["unit_id"]
+            unit_id=1  # 1 = heures (h)
         ))
 
         # 7. Demande de subvention
