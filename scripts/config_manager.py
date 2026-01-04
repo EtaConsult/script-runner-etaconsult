@@ -295,7 +295,7 @@ class ConfigManager:
 
         # Vérifier les tarifs essentiels
         essential_tarifs = [
-            "base_price", "frais_emission_cecb", "plus_factor",
+            "base_price", "frais_emission_cecb", "plus_factor_petit", "plus_factor_moyen", "plus_factor_grand",
             "surface_factor_petit", "surface_factor_grand", "km_factor_proche", "km_factor_loin"
         ]
 
