@@ -252,17 +252,7 @@ class QuotePositionBuilder:
             unit_id=self.bexio_ids["unit_id"]
         ))
 
-        # 3. Forfait exécution (si non nul)
-        if pricing["forfait_execution"] > 0:
-            positions.append(QuotePosition.create_custom_position(
-                text="Forfait relatif au délai d'exécution :<br>- Normal > 10 jours ouvrés, à convenir : 0.- HT<br>- Express < 5 jours ouvrés : 155.- HT<br>- Urgent < 48h : 310.- HT",
-                amount=1,
-                unit_price=pricing["forfait_execution"],
-                tax_id=self.bexio_ids["tax_id"],
-                unit_id=self.bexio_ids["unit_id"]
-            ))
-
-        # 4. Position CECB Plus
+        # 3. Position CECB Plus
         cecb_plus_text = self._format_cecb_plus_text(form_data)
         positions.append(QuotePosition.create_custom_position(
             text=cecb_plus_text,
@@ -272,7 +262,7 @@ class QuotePositionBuilder:
             unit_id=self.bexio_ids["unit_id"]
         ))
 
-        # 5. Frais d'émission CECB Plus
+        # 4. Frais d'émission CECB Plus
         positions.append(QuotePosition.create_custom_position(
             text="Frais d'émission du rapport CECB Plus sur la plateforme (nouveaux tarifs à partir du 01.01.2026)",
             amount=1,
@@ -281,12 +271,12 @@ class QuotePositionBuilder:
             unit_id=self.bexio_ids["unit_id"]
         ))
 
-        # 6. Informations sur les subventions
+        # 5. Informations sur les subventions
         positions.append(QuotePosition.create_text_position(
             legal_texts.get("subventions_cecb_plus", "")
         ))
 
-        # 7. Demande de subvention
+        # 6. Demande de subvention
         positions.append(QuotePosition.create_custom_position(
             text="Demande de subvention par l'expert CECB selon les conditions d'éligibilité du Programme des Bâtiments :<br>- Mesure IM-07: Etablissement d'un CECB®Plus",
             amount=1,
@@ -295,12 +285,12 @@ class QuotePositionBuilder:
             unit_id=self.bexio_ids["unit_id"]
         ))
 
-        # 8. Prestations incluses CECB Plus
+        # 7. Prestations incluses CECB Plus
         positions.append(QuotePosition.create_text_position(
             legal_texts.get("prestations_incluses_cecb_plus", "")
         ))
 
-        # 9. Conseil à la restitution du rapport CECB Plus
+        # 8. Conseil à la restitution du rapport CECB Plus
         positions.append(QuotePosition.create_custom_position(
             text="Conseils à la restitution du rapport CECB®Plus<br>- Lecture commentée du rapport de conseil",
             amount=1,
@@ -309,17 +299,17 @@ class QuotePositionBuilder:
             unit_id=1  # 1 = heures (h)
         ))
 
-        # 10. Clause de responsabilité CECB
+        # 9. Clause de responsabilité CECB
         positions.append(QuotePosition.create_text_position(
             legal_texts.get("responsabilite_cecb", "")
         ))
 
-        # 11. Prestations non-incluses CECB Plus
+        # 10. Prestations non-incluses CECB Plus
         positions.append(QuotePosition.create_text_position(
             legal_texts.get("prestations_non_incluses_cecb_plus", "")
         ))
 
-        # 12. Message personnalisé (si fourni)
+        # 11. Message personnalisé (si fourni)
         if form_data.get("message_personnalise"):
             message_formatted = legal_texts.get("format_custom_message", lambda x: x)(
                 form_data["message_personnalise"]
