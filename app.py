@@ -11,6 +11,7 @@ import subprocess
 import os
 import json
 import sys
+import re
 from datetime import datetime
 from functools import wraps
 
@@ -38,6 +39,18 @@ CORS(app)  # Active CORS pour toutes les routes
 # Configuration de la clé secrète pour les sessions
 # IMPORTANT: Changez cette clé pour la production !
 app.config['SECRET_KEY'] = 'c1306725f9386a8ecc14d6af03e7e381e0ac16bad2f38b2d576cd2de67bf5b0e'
+
+# Configuration de la base de données
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///script_runner.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Importer et initialiser la base de données
+from models import db, FormSubmission
+db.init_app(app)
+
+# Créer les tables au démarrage si elles n'existent pas
+with app.app_context():
+    db.create_all()
 
 # Configuration de Flask-Login
 login_manager = LoginManager()
@@ -278,6 +291,44 @@ def logout():
 
 
 # ==========================================
+# FONCTIONS UTILITAIRES POUR PARSING
+# ==========================================
+
+def extract_quote_id_from_output(output):
+    """
+    Extraire l'ID du devis depuis la sortie du script
+
+    Cherche le pattern "ID: 12345" dans la sortie logger
+    (voir scripts/202512_Creer_devis.py ligne 243)
+
+    Args:
+        output (str): Sortie stdout du script Python
+
+    Returns:
+        str|None: L'ID du devis ou None si non trouvé
+    """
+    match = re.search(r'ID:\s*(\d+)', output)
+    return match.group(1) if match else None
+
+
+def extract_document_nr_from_output(output):
+    """
+    Extraire le numéro de document depuis la sortie du script
+
+    Cherche le pattern "Numéro: A-0123" dans la sortie logger
+    (voir scripts/202512_Creer_devis.py ligne 244)
+
+    Args:
+        output (str): Sortie stdout du script Python
+
+    Returns:
+        str|None: Le numéro de document ou None si non trouvé
+    """
+    match = re.search(r'Numéro:\s*([A-Z0-9-]+)', output)
+    return match.group(1) if match else None
+
+
+# ==========================================
 # ROUTES PRINCIPALES
 # ==========================================
 
@@ -295,22 +346,45 @@ def run_script():
     data = request.json
     script_id = data.get('script_id')
     args = data.get('args', {})
-    
+
     if script_id not in SCRIPTS:
         return jsonify({
             'success': False,
             'error': f'Script {script_id} non trouvé'
         }), 404
-    
+
     script_config = SCRIPTS[script_id]
     script_path = os.path.join('scripts', script_config['file'])
-    
+
     if not os.path.exists(script_path):
         return jsonify({
             'success': False,
             'error': f'Fichier {script_path} non trouvé'
         }), 404
-    
+
+    # Sauvegarder la soumission AVANT l'exécution pour les devis CECB
+    submission = None
+    if script_id == 'creer_devis':
+        try:
+            form_data_json = args.get('form_data', '{}')
+            form_data = json.loads(form_data_json) if isinstance(form_data_json, str) else form_data_json
+
+            # Créer la soumission avec les métadonnées
+            submission = FormSubmission(
+                user_id=current_user.id,
+                form_type='devis_cecb',
+                form_data=form_data,
+                certificate_type=form_data.get('type_certificat', ''),
+                client_name=f"{form_data.get('prenom', '')} {form_data.get('nom', '')}".strip(),
+                building_address=form_data.get('adresse_batiment', ''),
+                status='submitted'
+            )
+            db.session.add(submission)
+            db.session.commit()
+        except Exception as e:
+            # En cas d'erreur de sauvegarde, logger mais continuer l'exécution
+            print(f"⚠️  Erreur lors de la sauvegarde de la soumission: {str(e)}")
+
     try:
         # Prépare les arguments si nécessaire
         cmd = ['python', script_path]
@@ -318,7 +392,7 @@ def run_script():
             for arg_name in script_config['args']:
                 if arg_name in args:
                     cmd.append(args[arg_name])
-        
+
         # Exécute le script avec encodage UTF-8
         start_time = datetime.now()
         result = subprocess.run(
@@ -331,7 +405,28 @@ def run_script():
         )
         end_time = datetime.now()
         duration = (end_time - start_time).total_seconds()
-        
+
+        # Mettre à jour la soumission avec le résultat
+        if submission:
+            try:
+                if result.returncode == 0:
+                    # Succès : extraire l'ID et le numéro de document
+                    quote_id = extract_quote_id_from_output(result.stdout)
+                    document_nr = extract_document_nr_from_output(result.stdout)
+
+                    submission.status = 'quote_created'
+                    submission.bexio_quote_id = quote_id
+                    submission.bexio_document_nr = document_nr
+                else:
+                    # Échec : sauvegarder l'erreur
+                    submission.status = 'error'
+                    submission.error_message = result.stderr[:500] if result.stderr else 'Erreur inconnue'
+
+                db.session.commit()
+            except Exception as e:
+                print(f"⚠️  Erreur lors de la mise à jour de la soumission: {str(e)}")
+                db.session.rollback()
+
         return jsonify({
             'success': result.returncode == 0,
             'stdout': result.stdout,
@@ -340,14 +435,32 @@ def run_script():
             'duration': f'{duration:.2f}s',
             'timestamp': datetime.now().strftime('%H:%M:%S')
         })
-        
+
     except subprocess.TimeoutExpired:
+        # Timeout : mettre à jour la soumission
+        if submission:
+            try:
+                submission.status = 'error'
+                submission.error_message = 'Timeout: le script a dépassé le temps d\'exécution maximal (5 min)'
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+
         return jsonify({
             'success': False,
             'error': 'Le script a dépassé le temps d\'exécution maximal (5 min)'
         }), 408
-        
+
     except Exception as e:
+        # Erreur générale : mettre à jour la soumission
+        if submission:
+            try:
+                submission.status = 'error'
+                submission.error_message = str(e)[:500]
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+
         return jsonify({
             'success': False,
             'error': f'Erreur lors de l\'exécution : {str(e)}'
@@ -362,10 +475,129 @@ def list_scripts():
 
 
 @app.route('/devis/nouveau')
+@app.route('/devis/nouveau/<int:submission_id>')
 @login_required
-def nouveau_devis():
-    """Affiche le formulaire de création de devis CECB"""
-    return render_template('form_devis_cecb.html', google_api_key=GOOGLE_API_KEY)
+def nouveau_devis(submission_id=None):
+    """Affiche le formulaire de création de devis CECB
+
+    Args:
+        submission_id (int, optional): ID d'une soumission à rappeler pour pré-remplissage
+    """
+    submission_data = None
+
+    # Si un submission_id est fourni, charger les données
+    if submission_id:
+        submission = FormSubmission.query.filter_by(
+            id=submission_id,
+            user_id=current_user.id
+        ).first()
+
+        if submission:
+            submission_data = submission.to_dict()
+        else:
+            flash('Soumission non trouvée ou accès refusé', 'warning')
+
+    return render_template(
+        'form_devis_cecb.html',
+        google_api_key=GOOGLE_API_KEY,
+        submission_data=submission_data
+    )
+
+
+# ==========================================
+# ROUTES API SOUMISSIONS (Phase 2)
+# ==========================================
+
+@app.route('/api/submissions', methods=['GET'])
+@login_required
+def list_submissions():
+    """Liste les soumissions de l'utilisateur connecté"""
+    try:
+        # Récupérer toutes les soumissions de l'utilisateur, triées par date (plus récentes en premier)
+        submissions = FormSubmission.query.filter_by(
+            user_id=current_user.id
+        ).order_by(
+            FormSubmission.created_at.desc()
+        ).all()
+
+        # Convertir en dictionnaires
+        submissions_data = [sub.to_dict() for sub in submissions]
+
+        return jsonify({
+            'success': True,
+            'submissions': submissions_data,
+            'count': len(submissions_data)
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': f'Erreur lors de la récupération des soumissions: {str(e)}'
+        }), 500
+
+
+@app.route('/api/submissions/<int:submission_id>', methods=['GET'])
+@login_required
+def get_submission(submission_id):
+    """Récupère une soumission spécifique"""
+    try:
+        submission = FormSubmission.query.filter_by(
+            id=submission_id,
+            user_id=current_user.id
+        ).first()
+
+        if not submission:
+            return jsonify({
+                'success': False,
+                'error': 'Soumission non trouvée ou accès refusé'
+            }), 404
+
+        return jsonify({
+            'success': True,
+            'submission': submission.to_dict()
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': f'Erreur lors de la récupération: {str(e)}'
+        }), 500
+
+
+@app.route('/api/submissions/<int:submission_id>', methods=['DELETE'])
+@login_required
+def delete_submission(submission_id):
+    """Supprime une soumission"""
+    try:
+        submission = FormSubmission.query.filter_by(
+            id=submission_id,
+            user_id=current_user.id
+        ).first()
+
+        if not submission:
+            return jsonify({
+                'success': False,
+                'error': 'Soumission non trouvée ou accès refusé'
+            }), 404
+
+        db.session.delete(submission)
+        db.session.commit()
+
+        return jsonify({
+            'success': True,
+            'message': 'Soumission supprimée avec succès'
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'error': f'Erreur lors de la suppression: {str(e)}'
+        }), 500
+
+
+@app.route('/submissions')
+@login_required
+def submissions_page():
+    """Page HTML listant les soumissions de l'utilisateur"""
+    return render_template('submissions.html')
 
 
 @app.route('/tests')

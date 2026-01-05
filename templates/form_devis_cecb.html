@@ -798,6 +798,123 @@
                 addLog('Vérifiez que le serveur Flask est bien démarré.', 'error');
             }
         });
+
+        // ==========================================
+        // PHASE 3: PRÉ-REMPLISSAGE DU FORMULAIRE
+        // ==========================================
+
+        {% if submission_data %}
+        // Données de soumission à pré-remplir
+        const submissionData = {{ submission_data | tojson }};
+
+        // Fonction pour pré-remplir le formulaire
+        function prefillForm() {
+            if (!submissionData || !submissionData.form_data) {
+                return;
+            }
+
+            const formData = submissionData.form_data;
+
+            console.log('🔄 Pré-remplissage du formulaire avec:', formData);
+            addLog('🔄 Pré-remplissage du formulaire avec les données de la soumission...', 'info');
+
+            // Fonction utilitaire pour définir la valeur d'un champ
+            function setFieldValue(fieldId, value) {
+                const field = document.getElementById(fieldId);
+                if (field && value !== null && value !== undefined) {
+                    field.value = value;
+                    // Déclencher l'événement change pour les select qui ont des listeners
+                    field.dispatchEvent(new Event('change'));
+                    return true;
+                }
+                return false;
+            }
+
+            // Fonction pour cocher une checkbox
+            function setCheckbox(fieldId, value) {
+                const field = document.getElementById(fieldId);
+                if (field) {
+                    field.checked = Boolean(value);
+                    field.dispatchEvent(new Event('change'));
+                    return true;
+                }
+                return false;
+            }
+
+            // 1. Type de contact
+            if (formData.type_contact) {
+                setFieldValue('type_contact', formData.type_contact);
+            }
+
+            // 2. Nom entreprise (si société)
+            if (formData.nom_entreprise) {
+                setFieldValue('nom_entreprise', formData.nom_entreprise);
+            }
+
+            // 3. Appellation
+            if (formData.appellation) {
+                setFieldValue('appellation', formData.appellation);
+            }
+
+            // 4. Nom et prénom
+            setFieldValue('nom_famille', formData.nom_famille || formData.nom || '');
+            setFieldValue('prenom', formData.prenom || '');
+
+            // 5. Email et téléphone
+            setFieldValue('email', formData.email || '');
+            setFieldValue('telephone', formData.telephone || '');
+
+            // 6. Adresse de facturation
+            setFieldValue('rue_facturation', formData.rue_facturation || formData.adresse_facturation || '');
+            setFieldValue('npa_facturation', formData.npa_facturation || formData.npa || '');
+            setFieldValue('localite_facturation', formData.localite_facturation || formData.localite || '');
+            setFieldValue('pays_facturation', formData.pays_facturation || 'Suisse');
+
+            // 7. Adresse du bâtiment
+            if (formData.adresse_identique) {
+                setCheckbox('adresse_identique', true);
+            } else {
+                setFieldValue('rue_batiment', formData.rue_batiment || formData.adresse_batiment || '');
+                setFieldValue('npa_batiment', formData.npa_batiment || '');
+                setFieldValue('localite_batiment', formData.localite_batiment || '');
+            }
+
+            // 8. Type de certificat
+            if (formData.type_certificat) {
+                setFieldValue('type_certificat', formData.type_certificat);
+            }
+
+            // 9. Caractéristiques du bâtiment
+            setFieldValue('nombre_etages', formData.nombre_etages || 2);
+            setFieldValue('sous_sol', formData.sous_sol || 'Non chauffé');
+            setFieldValue('combles', formData.combles || 'Non chauffé');
+
+            // 10. Délai (si pas Conseil Incitatif)
+            if (formData.delai) {
+                setFieldValue('delai', formData.delai);
+            }
+
+            // 11. Contexte
+            if (formData.contexte) {
+                setFieldValue('contexte', formData.contexte);
+            }
+
+            // 12. Message
+            setFieldValue('message', formData.message || '');
+
+            // Afficher un message de succès
+            addLog(`✅ Formulaire pré-rempli avec les données de "${submissionData.client_name}"`, 'success');
+            addLog(`📋 Type: ${submissionData.certificate_type} | Créé le: ${new Date(submissionData.created_at).toLocaleDateString('fr-CH')}`, 'info');
+
+            // Scroll vers le haut du formulaire
+            document.getElementById('devisForm').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Pré-remplir automatiquement au chargement
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(prefillForm, 500); // Petit délai pour s'assurer que tout est chargé
+        });
+        {% endif %}
     </script>
 </body>
 </html>
