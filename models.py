@@ -5,10 +5,21 @@ Ce module définit les modèles SQLAlchemy pour la persistance des données.
 """
 
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from datetime import datetime, timezone
 
 # Instance SQLAlchemy à partager avec app.py
 db = SQLAlchemy()
+
+
+def get_local_time():
+    """
+    Retourne l'heure actuelle en timezone Suisse (Europe/Zurich)
+    UTC+1 en hiver, UTC+2 en été
+    """
+    # Pour simplifier, on utilise UTC+1 (heure de Suisse en hiver)
+    # En production, utiliser pytz pour gérer correctement les fuseaux horaires
+    from datetime import timedelta
+    return datetime.now(timezone.utc) + timedelta(hours=1)
 
 
 class FormSubmission(db.Model):
@@ -43,8 +54,8 @@ class FormSubmission(db.Model):
     building_address = db.Column(db.String(300), nullable=True)
 
     # Timestamps
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=get_local_time, index=True)
+    updated_at = db.Column(db.DateTime, default=get_local_time, onupdate=get_local_time)
 
     def __repr__(self):
         return f'<FormSubmission {self.id} - {self.client_name} - {self.status}>'

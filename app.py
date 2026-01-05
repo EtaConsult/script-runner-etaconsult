@@ -370,13 +370,29 @@ def run_script():
             form_data = json.loads(form_data_json) if isinstance(form_data_json, str) else form_data_json
 
             # Créer la soumission avec les métadonnées
+
+            # Déterminer le nom du client (société ou personne)
+            if form_data.get('type_contact') == 'societe':
+                client_name = form_data.get('nom_entreprise', '') or form_data.get('nom_societe', '')
+            else:
+                prenom = form_data.get('prenom', '')
+                nom = form_data.get('nom', '') or form_data.get('nom_famille', '')
+                client_name = f"{prenom} {nom}".strip()
+
+            # Déterminer l'adresse du bâtiment
+            building_address = (
+                form_data.get('adresse_batiment') or
+                form_data.get('rue_batiment') or
+                ''
+            )
+
             submission = FormSubmission(
                 user_id=current_user.id,
                 form_type='devis_cecb',
                 form_data=form_data,
                 certificate_type=form_data.get('type_certificat', ''),
-                client_name=f"{form_data.get('prenom', '')} {form_data.get('nom', '')}".strip(),
-                building_address=form_data.get('adresse_batiment', ''),
+                client_name=client_name,
+                building_address=building_address,
                 status='submitted'
             )
             db.session.add(submission)
