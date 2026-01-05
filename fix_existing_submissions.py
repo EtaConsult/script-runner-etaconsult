@@ -30,8 +30,8 @@ with app.app_context():
             new_client_name = form_data.get('nom_entreprise', '') or form_data.get('nom_societe', '')
         else:
             prenom = form_data.get('prenom', '')
-            nom = form_data.get('nom', '') or form_data.get('nom_famille', '')
-            new_client_name = f"{prenom} {nom}".strip()
+            nom_famille = form_data.get('nom_famille', '') or form_data.get('nom', '')
+            new_client_name = f"{prenom} {nom_famille}".strip()
 
         if new_client_name and new_client_name != old_client_name:
             sub.client_name = new_client_name

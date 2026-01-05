@@ -376,8 +376,8 @@ def run_script():
                 client_name = form_data.get('nom_entreprise', '') or form_data.get('nom_societe', '')
             else:
                 prenom = form_data.get('prenom', '')
-                nom = form_data.get('nom', '') or form_data.get('nom_famille', '')
-                client_name = f"{prenom} {nom}".strip()
+                nom_famille = form_data.get('nom_famille', '') or form_data.get('nom', '')
+                client_name = f"{prenom} {nom_famille}".strip()
 
             # Déterminer l'adresse du bâtiment
             building_address = (
