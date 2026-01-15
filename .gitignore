@@ -2,6 +2,10 @@ nul
 
 # Configuration (contient les tokens API)
 config.py
+.env
+
+# Base de données SQLite (soumissions)
+instance/
 
 # Fichier des utilisateurs (contient les comptes et mots de passe hachés)
 users.json

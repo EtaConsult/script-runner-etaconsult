@@ -13,18 +13,44 @@ from datetime import datetime
 from pathlib import Path
 import shutil
 import base64
+from dotenv import load_dotenv
+
+# Charger les variables d'environnement depuis .env (remonte au dossier parent)
+env_path = Path(__file__).resolve().parent.parent / '.env'
+load_dotenv(env_path)
 
 # ============================================
-# CONFIGURATION
+# CONFIGURATION (depuis variables d'environnement)
 # ============================================
 
-BEXIO_TOKEN = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJkVTNTYXFLOHF1c25rakl4WEFsbE1EZk0zakRLYkJneDd3dlVVMHBsaUhFIn0.eyJleHAiOjE3ODI1MTYzMjIsImlhdCI6MTc2NjcwNTE0MCwianRpIjoiZjZkMjk2YzktOWNhNi00ZTc3LWE5NWQtMzhjZmY3NDA5NTI2IiwiaXNzIjoiaHR0cHM6Ly9hdXRoLmJleGlvLmNvbS9yZWFsbXMvYmV4aW8iLCJzdWIiOiI2MWIzMDNmMi1jMGMxLTQwMzgtYTM0YS0zOTc4ODRhNjc1ZjUiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJiZXhpb19wYXRfcHJvdmlkZXIiLCJzaWQiOiIzMDdiZjVhMS03NWNkLTQwYzUtYTY4Zi1iYWRlNmEwZmE2YWQiLCJzY29wZSI6Im9wZW5pZCBhY2NvdW50aW5nIGtiX2RlbGl2ZXJ5X3Nob3cgYXJjaGl2ZV9lZGl0IGJhbmtfcGF5bWVudF9zaG93IHByb2plY3RfZWRpdCBhY2NvdW50aW5nX3NldHRpbmdzX2VkaXQga2JfY3JlZGl0X3ZvdWNoZXJfc2hvdyBhcmNoaXZlX3NldHRpbmdzX2VkaXQga2Jfb2ZmZXJfZWRpdCBmaWxlIHByb2plY3Rfc2hvdyBjb21wYW55X3Byb2ZpbGUga2JfYmlsbF9zaG93IGNvbnRhY3RfZWRpdCBub3RlX3Nob3cga2JfZGVsaXZlcnlfZWRpdCBrYl9leHBlbnNlX3Nob3cgcGF5cm9sbF9wYXlzdHViX3Nob3cgcGF5cm9sbF9lbXBsb3llZV9zaG93IGtiX2FydGljbGVfb3JkZXJfZWRpdCBhcnRpY2xlX2VkaXQga2JfaW52b2ljZV9lZGl0IG9mZmxpbmVfYWNjZXNzIGtiX29yZGVyX3Nob3cga2JfYXJ0aWNsZV9vcmRlcl9zaG93IHBheXJvbGxfdGltZV9hY2NvdW50X2VkaXQgcGF5cm9sbF90aW1lX2FjY291bnRfc2hvdyBzdG9ja19lZGl0IHBheXJvbGxfYWJzZW5jZV9zaG93IGVtYWlsIGtiX29yZGVyX2VkaXQgcGF5cm9sbF9lbXBsb3llZV9lZGl0IHJldm9jYWJsZSBrYl9jcmVkaXRfdm91Y2hlcl9lZGl0IGJhbmtfcGF5bWVudF9lZGl0IG1vbml0b3JpbmdfZWRpdCB0YXNrX2VkaXQgbGVhZF9lZGl0IGFjY291bnRpbmdfc2V0dGluZ3Nfc2hvdyBhcmNoaXZlX3Nob3cga2JfYmlsbF9lZGl0IG1vbml0b3Jpbmdfc2hvdyB0ZWNobmljYWwgbGVhZF9zaG93IHRhc2tfc2hvdyBhcnRpY2xlX3Nob3cgZmluYW5jZV9yZXBvcnRzIGFyY2hpdmVfc2V0dGluZ3Nfc2hvdyBrYl9pbnZvaWNlX3Nob3cgc3Vic2NyaXB0aW9uX2FuZF9wZXJtaXNzaW9ucyBrYl9vZmZlcl9zaG93IHBheXJvbGxfYWJzZW5jZV9lZGl0IGJhbmtfYWNjb3VudF9zaG93IG5vdGVfZWRpdCBrYl9leHBlbnNlX2VkaXQgcHJvZmlsZSBjb250YWN0X3Nob3ciLCJsb2dpbl9pZCI6IjYxYjMwM2YyLWMwYzEtNDAzOC1hMzRhLTM5Nzg4NGE2NzVmNSIsImNvbXBhbnlfaWQiOiJrZ2Voc3QxYm1qZm8iLCJ1c2VyX2lkIjozNzAyOTgsImNvbXBhbnlfdXNlcl9pZCI6MX0.E8F0_yxz8j5Y24LRCTORfwkenz5m4H0hfXfuumKc-1xECnwOD-q7SVknLxAd_CDBOV2pHdcJokjkFLJ_oQsHQcmM3Uh2C-5UJzapSx0seZjaUfV9i2X6xwlFtmxoz3CZEwO-2jDNKUPoJaXvjXIN9A33l60n8mtP-nrrd13qABlU4Em_mAl-yg22UnxK-pLIfI9Eu8T_U3hMhLKM3LEWrNk_9ym9bwlSHdeyCPnfF0PLZlG_OCw2c-V5c-4IRI0-bR-t9eTW_Dmg6F7dZFjuv4vmZu8pTBb9xEJokQ8FBtLRRuwVv_hTO-AI2g9qRViIrNi6MDjtAgRiVd0T0miyuw"
-NOTION_TOKEN = "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"
-NOTION_DATABASE_ID = "217e930a-734b-8043-b41a-db294622dc14"
+BEXIO_TOKEN = os.environ.get('BEXIO_TOKEN', '')
+NOTION_TOKEN = os.environ.get('NOTION_TOKEN', '')
+NOTION_DATABASE_ID = os.environ.get('NOTION_DATABASE_ID', '')
 
-# Chemins locaux OneDrive
-DOSSIERS_ACTIFS = Path(r"C:\Users\info\OneDrive\Documents_Eta Consult\12. Dossiers actifs")
-DOSSIER_MODELES = Path(r"C:\Users\info\OneDrive\Documents_Eta Consult\MODELE")
+# ============================================
+# CHEMINS MULTI-PLATEFORME
+# ============================================
+def get_default_path(env_var, windows_default, linux_default):
+    """Retourne le chemin depuis la variable d'environnement ou la valeur par defaut selon la plateforme"""
+    env_value = os.environ.get(env_var)
+    if env_value:
+        return Path(env_value)
+    if sys.platform == "win32":
+        return Path(windows_default)
+    else:
+        return Path(linux_default)
+
+DOSSIERS_ACTIFS = get_default_path(
+    "DOSSIERS_ACTIFS_PATH",
+    r"C:\Users\info\OneDrive\Documents_Eta Consult\12. Dossiers actifs",
+    "/home/etaconsult/dossiers_actifs"
+)
+
+DOSSIER_MODELES = get_default_path(
+    "DOSSIER_MODELES_PATH",
+    r"C:\Users\info\OneDrive\Documents_Eta Consult\MODELE",
+    "/home/etaconsult/modeles"
+)
 
 # ============================================
 # FONCTIONS BEXIO
@@ -107,7 +133,7 @@ def creer_structure_dossiers(rue, localite):
     ]
     
     print(f"\n[DOSSIER] Creation: {nom_dossier}")
-    dossier_principal.mkdir(exist_ok=True)
+    dossier_principal.mkdir(parents=True, exist_ok=True)
     
     for sous_dossier in sous_dossiers:
         chemin = dossier_principal / sous_dossier
@@ -126,9 +152,9 @@ def copier_templates(dossier_projet, rue, localite):
     nom_fichier = f"{rue}_{localite}"
     
     templates = [
-        ("Rue n_Localite.3dm", "3. CAO", f"{nom_fichier}.3dm"),
-        ("Rue n_Localite.gh", "3. CAO", f"{nom_fichier}.gh"),
-        ("Rue n_Localite.bld", "4. Lesosai", f"{nom_fichier}.bld"),
+        ("Rue n°_Localité.3dm", "3. CAO", f"{nom_fichier}.3dm"),
+        ("Rue n°_Localité.gh", "3. CAO", f"{nom_fichier}.gh"),
+        ("Rue n°_Localité.bld", "4. Lesosai", f"{nom_fichier}.bld"),
     ]
     
     print(f"\n[TEMPLATES] Copie:")

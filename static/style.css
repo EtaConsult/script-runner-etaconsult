@@ -404,6 +404,22 @@ header h1 {
     background: #475569;
 }
 
+.copy-btn {
+    padding: 0.5rem 1rem;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-right: 0.5rem;
+}
+
+.copy-btn:hover {
+    background: #2563eb;
+}
+
 /* Scrollbar personnalisée */
 .logs-container::-webkit-scrollbar {
     width: 8px;

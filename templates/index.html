@@ -17,7 +17,6 @@
                 <div class="header-right">
                     <nav class="admin-nav">
                         {% if current_user.is_admin() %}
-                        <a href="/admin/tarifs" class="admin-link" title="Gérer les tarifs">⚙️ Tarifs</a>
                         <a href="/admin/textes" class="admin-link" title="Gérer les textes des devis">📝 Textes</a>
                         <a href="/tests" class="admin-link" title="Liens de test avec formulaires pré-remplis">🧪 Tests</a>
                         <a href="/admin/users" class="admin-link" title="Gérer les utilisateurs">👥 Utilisateurs</a>
@@ -93,6 +92,7 @@
                 <div id="logs" class="logs-container">
                     <p class="log-placeholder">En attente d'exécution...</p>
                 </div>
+                <button onclick="copyLogs()" class="copy-btn">📋 Copier les logs</button>
                 <button onclick="clearLogs()" class="clear-btn">🗑️ Effacer les logs</button>
             </div>
         </div>
@@ -150,6 +150,21 @@
 
         function clearLogs() {
             logsContainer.innerHTML = '<p class="log-placeholder">Logs effacés...</p>';
+        }
+
+        function copyLogs() {
+            const logs = logsContainer.innerText;
+            navigator.clipboard.writeText(logs).then(() => {
+                // Feedback visuel temporaire
+                const btn = document.querySelector('.copy-btn');
+                const originalText = btn.textContent;
+                btn.textContent = '✅ Copié!';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            }).catch(err => {
+                alert('Erreur lors de la copie: ' + err);
+            });
         }
 
         function setScriptStatus(scriptId, status) {

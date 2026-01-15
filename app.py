@@ -14,6 +14,10 @@ import sys
 import re
 from datetime import datetime
 from functools import wraps
+from dotenv import load_dotenv
+
+# Charger les variables d'environnement depuis .env
+load_dotenv()
 
 # Importer le système d'authentification
 from auth import (User, get_user_by_id, get_user_by_email, create_default_admin,
@@ -25,20 +29,14 @@ if sys.platform == 'win32':
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
-# Importer config si disponible
-try:
-    import config
-    GOOGLE_API_KEY = getattr(config, 'GOOGLE_MAPS_API_KEY', '')
-except ImportError:
-    GOOGLE_API_KEY = ''
-    print("⚠️  config.py non trouvé - l'autocomplétion Google sera désactivée")
+# Récupérer la clé Google Maps depuis les variables d'environnement
+GOOGLE_API_KEY = os.environ.get('GOOGLE_MAPS_API_KEY', '')
 
 app = Flask(__name__)
 CORS(app)  # Active CORS pour toutes les routes
 
 # Configuration de la clé secrète pour les sessions
-# IMPORTANT: Changez cette clé pour la production !
-app.config['SECRET_KEY'] = 'c1306725f9386a8ecc14d6af03e7e381e0ac16bad2f38b2d576cd2de67bf5b0e'
+app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY', 'dev-key-change-in-production')
 
 # Configuration de la base de données
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///script_runner.db'
