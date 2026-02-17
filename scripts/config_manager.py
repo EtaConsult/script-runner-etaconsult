@@ -171,6 +171,26 @@ class ConfigManager:
         """Retourne tous les tarifs"""
         return self.tarifs.copy()
 
+    def apply_tarifs_override(self, overrides: Dict[str, Any]) -> None:
+        """
+        Applique des surcharges temporaires aux tarifs (pour ce devis uniquement)
+
+        Args:
+            overrides: Dictionnaire des tarifs à surcharger
+        """
+        for key, value in overrides.items():
+            if key in self.tarifs:
+                try:
+                    # Convertir en nombre (float ou int selon la valeur d'origine)
+                    if isinstance(self.tarifs[key], int):
+                        self.tarifs[key] = int(float(value))
+                    else:
+                        self.tarifs[key] = float(value)
+                except (ValueError, TypeError):
+                    logger.warning(f"⚠️  Impossible de convertir tarif '{key}': {value}")
+            else:
+                logger.warning(f"⚠️  Clé de tarif inconnue ignorée: {key}")
+
     # ==========================================
     # ACCESSEURS POUR TEXTES
     # ==========================================

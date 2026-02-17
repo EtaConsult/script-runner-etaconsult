@@ -19,7 +19,7 @@ Usage:
 import sys
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict
 
 # ==========================================
@@ -78,6 +78,12 @@ def create_quote(form_data: Dict, config_mgr: ConfigManager) -> Dict:
     type_certificat = form_data["type_certificat"]
     logger.info(f"📋 Type de certificat: {type_certificat}")
     logger.info(f"👤 Contact: {form_data['prenom']} {form_data['nom_famille']}")
+
+    # 0. Appliquer les tarifs override si fournis par le formulaire
+    if form_data.get("tarifs_override"):
+        tarifs_override = form_data.pop("tarifs_override")
+        logger.info(f"💰 Tarifs override reçus: {list(tarifs_override.keys())}")
+        config_mgr.apply_tarifs_override(tarifs_override)
 
     # 1. Initialiser les clients
     logger.info(f"\n{'=' * 60}")
@@ -220,11 +226,18 @@ def create_bexio_quote(
     # Récupérer le pourcentage d'acompte depuis les tarifs
     pct_acompte = config_mgr.get_tarif("pct_acompte", 30)
 
+    # Dates de validité de l'offre (20 jours)
+    today = datetime.now()
+    is_valid_from = today.strftime("%Y-%m-%d")
+    is_valid_to = (today + timedelta(days=20)).strftime("%Y-%m-%d")
+
     # Payload de l'offre
     payload = {
         "contact_id": contact_ids["contact_id"],
         "user_id": config_mgr.get_bexio_ids()["user_id"],
         "title": title,
+        "is_valid_from": is_valid_from,
+        "is_valid_to": is_valid_to,
         "mwst_type": config_mgr.get_bexio_ids()["mwst_type"],
         "currency_id": config_mgr.get_bexio_ids()["currency_id"],
         "language_id": config_mgr.get_bexio_ids()["language_id"],
@@ -293,14 +306,25 @@ def main():
     print("🚀 Création de devis CECB/CECB Plus/Conseil Incitatif")
     print("=" * 60)
 
-    # 1. Récupérer les données du formulaire
-    if len(sys.argv) < 2:
+    # 1. Récupérer les données du formulaire (stdin prioritaire, puis argv)
+    raw_json = None
+
+    if not sys.stdin.isatty():
+        # Lire depuis stdin (envoyé par subprocess via input=)
+        raw_json = sys.stdin.read().strip()
+
+    if not raw_json and len(sys.argv) >= 2:
+        # Fallback: lire depuis argv
+        raw_json = sys.argv[1]
+
+    if not raw_json:
         logger.error("❌ ERREUR : Données du formulaire manquantes")
         logger.error("Usage: python 202512_Creer_devis.py '{...json...}'")
+        logger.error("       ou: echo '{...json...}' | python 202512_Creer_devis.py")
         sys.exit(1)
 
     try:
-        form_data = json.loads(sys.argv[1])
+        form_data = json.loads(raw_json)
     except json.JSONDecodeError as e:
         logger.error(f"❌ ERREUR : Format JSON invalide: {e}")
         sys.exit(1)

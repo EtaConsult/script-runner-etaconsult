@@ -52,10 +52,17 @@ class ContactManager:
         # Normaliser le type de contact (retirer espaces avant/après)
         type_contact = form_data.get("type_contact", "").strip()
 
+        logger.info(f"   🔍 type_contact reçu: repr={repr(type_contact)}")
+
         if type_contact == "Privé":
             return self._handle_private_contact(form_data)
-        else:
+        elif type_contact == "Société":
             return self._handle_company_contact(form_data)
+        else:
+            raise ValueError(
+                f"Type de contact non reconnu: {repr(type_contact)}. "
+                f"Valeurs attendues: 'Privé' ou 'Société'"
+            )
 
     # ==========================================
     # GESTION CONTACT PRIVÉ
@@ -105,15 +112,7 @@ class ContactManager:
         Returns:
             Contact créé
         """
-        # IMPORTANT: Vérifier que contact_type_id est bien configuré
-        contact_type_prive = self.contact_types.get("Privé")
-        if contact_type_prive is None:
-            raise ValueError("ERREUR: contact_types['Privé'] n'est pas configuré!")
-
-        logger.info(f"   🔍 DEBUG: contact_types['Privé'] = {contact_type_prive}")
-        logger.info(f"   🔍 DEBUG: nom_famille = '{data.get('nom_famille')}'")
-        logger.info(f"   🔍 DEBUG: prenom = '{data.get('prenom')}'")
-        logger.info(f"   🔍 DEBUG: rue_facturation = '{data.get('rue_facturation')}'")
+        contact_type_prive = self.contact_types.get("Privé", 1)
 
         payload = {
             "contact_type_id": contact_type_prive,

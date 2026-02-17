@@ -12,6 +12,7 @@ import os
 import json
 import sys
 import re
+import copy
 from datetime import datetime
 from functools import wraps
 from dotenv import load_dotenv
@@ -370,7 +371,7 @@ def run_script():
             # Créer la soumission avec les métadonnées
 
             # Déterminer le nom du client (société ou personne)
-            if form_data.get('type_contact') == 'societe':
+            if form_data.get('type_contact') == 'Société':
                 client_name = form_data.get('nom_entreprise', '') or form_data.get('nom_societe', '')
             else:
                 prenom = form_data.get('prenom', '')
@@ -400,21 +401,33 @@ def run_script():
             print(f"⚠️  Erreur lors de la sauvegarde de la soumission: {str(e)}")
 
     try:
-        # Prépare les arguments si nécessaire
+        # Prépare la commande et l'entrée stdin
         cmd = ['python', script_path]
+        stdin_data = None
+
         if 'args' in script_config:
             for arg_name in script_config['args']:
                 if arg_name in args:
-                    cmd.append(args[arg_name])
+                    if arg_name == 'form_data':
+                        # Passer les données JSON via stdin (évite les problèmes d'encodage Windows cp1252)
+                        stdin_data = args[arg_name]
+                    else:
+                        cmd.append(args[arg_name])
+
+        # Environnement avec PYTHONUTF8=1 pour forcer UTF-8 dans le subprocess
+        env = copy.copy(os.environ)
+        env['PYTHONUTF8'] = '1'
 
         # Exécute le script avec encodage UTF-8
         start_time = datetime.now()
         result = subprocess.run(
             cmd,
+            input=stdin_data,
             capture_output=True,
             text=True,
             encoding='utf-8',  # Force UTF-8 pour gérer les caractères spéciaux
             errors='replace',  # Remplace les caractères non décodables
+            env=env,
             timeout=300  # Timeout de 5 minutes
         )
         end_time = datetime.now()
@@ -848,6 +861,14 @@ def get_building_data():
             'success': False,
             'error': f'Erreur serveur: {str(e)}'
         }), 500
+
+
+@app.route('/api/tarifs', methods=['GET'])
+@login_required
+def api_tarifs():
+    """Retourne les tarifs actuels en JSON (utilisé par le panneau tarifs du formulaire)"""
+    tarifs = load_tarifs()
+    return jsonify(tarifs)
 
 
 if __name__ == '__main__':
