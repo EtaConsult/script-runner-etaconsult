@@ -19,5 +19,6 @@
   "demande_subvention_cecb_plus": 155,
   "forfait_normal": 0,
   "forfait_express": 155,
-  "forfait_urgent": 310
+  "forfait_urgent": 310,
+  "frais_transfert_cecb": 90
 }

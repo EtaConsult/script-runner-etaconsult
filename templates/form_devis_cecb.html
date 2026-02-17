@@ -9,15 +9,82 @@
     <style>
         .form-container {
             display: grid;
-            grid-template-columns: 1fr 400px;
+            grid-template-columns: 280px 1fr 400px;
             gap: 2rem;
             margin-top: 2rem;
+        }
+
+        @media (max-width: 1400px) {
+            .form-container {
+                grid-template-columns: 1fr 400px;
+            }
+            .tarifs-panel { display: none; }
         }
 
         @media (max-width: 1200px) {
             .form-container {
                 grid-template-columns: 1fr;
             }
+        }
+
+        /* Panneau tarifs */
+        .tarifs-panel {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 1.25rem;
+            box-shadow: 0 1px 3px var(--shadow);
+            position: sticky;
+            top: 1rem;
+            max-height: calc(100vh - 2rem);
+            overflow-y: auto;
+        }
+
+        .tarifs-panel h3 {
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .tarif-group {
+            margin-bottom: 0.75rem;
+        }
+
+        .tarif-group label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-light);
+            margin-bottom: 0.2rem;
+        }
+
+        .tarif-group input {
+            width: 100%;
+            padding: 0.4rem 0.6rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-family: inherit;
+        }
+
+        .tarif-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .tarif-separator {
+            border-top: 1px solid var(--border);
+            margin: 0.75rem 0;
+            font-size: 0.7rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            padding-top: 0.5rem;
+            font-weight: 600;
+        }
+
+        .tarif-info {
+            font-size: 0.7rem;
+            color: var(--text-light);
+            font-style: italic;
+            margin-top: 0.5rem;
         }
 
         .form-panel {
@@ -235,6 +302,15 @@
         </header>
 
         <div class="form-container">
+            <!-- Panneau tarifs (gauche) -->
+            <div class="tarifs-panel" id="tarifsPanel">
+                <h3>Tarifs</h3>
+                <div id="tarifsFields">
+                    <p class="tarif-info">Chargement...</p>
+                </div>
+                <p class="tarif-info">Les modifications s'appliquent uniquement à ce devis.</p>
+            </div>
+
             <!-- Panneau du formulaire -->
             <div class="form-panel">
                 <div class="info-box">
@@ -392,12 +468,26 @@
                             </div>
                         </div>
 
+                        <!-- CECB existant (mise à jour) -->
+                        <div class="checkbox-group" id="group_cecb_existant">
+                            <input type="checkbox" id="cecb_existant" name="cecb_existant">
+                            <label for="cecb_existant">CECB existant (mise à jour)</label>
+                        </div>
+
+                        <div class="form-group hidden" id="group_rabais_cecb">
+                            <label for="rabais_cecb">Rabais sur le prix du CECB (CHF)</label>
+                            <input type="number" id="rabais_cecb" name="rabais_cecb" min="0" step="10" value="0">
+                            <small style="color: #64748b; font-size: 0.85rem; display: block; margin-top: 0.25rem;">
+                                + Position "Transfert du CECB" à <span id="frais_transfert_label">90</span> CHF HT ajoutée automatiquement.
+                            </small>
+                        </div>
+
                         <div class="form-group" id="group_delai">
                             <label for="delai">Délai</label>
                             <select id="delai" name="delai">
                                 <option value="Normal">Normal</option>
-                                <option value="Express (+135 CHF)">Express (+135 CHF)</option>
-                                <option value="Urgent (+270 CHF)">Urgent (+270 CHF)</option>
+                                <option value="Express" id="option_express">Express (+155 CHF)</option>
+                                <option value="Urgent" id="option_urgent">Urgent (+310 CHF)</option>
                             </select>
                         </div>
 
@@ -463,10 +553,129 @@
             logsContainer.innerHTML = '<p class="log-placeholder">Logs effacés...</p>';
         }
 
+        // ========================================
+        // TARIFS — Chargement et affichage
+        // ========================================
+        let currentTarifs = {};
+        let originalTarifs = {};
+
+        const TARIF_LABELS = {
+            base_price: 'Prix de base (CHF)',
+            km_factor_proche: 'Facteur km proche',
+            km_factor_loin: 'Facteur km loin',
+            km_seuil: 'Seuil km',
+            surface_factor_petit: 'Facteur surface petit',
+            surface_factor_grand: 'Facteur surface grand',
+            surface_seuil: 'Seuil surface (m²)',
+            plus_factor_petit: 'Facteur Plus petit',
+            plus_factor_moyen: 'Facteur Plus moyen',
+            plus_factor_grand: 'Facteur Plus grand',
+            plus_seuil_petit: 'Seuil Plus petit (m²)',
+            plus_seuil_grand: 'Seuil Plus grand (m²)',
+            plus_price_max: 'Prix max Plus (CHF)',
+            frais_emission_cecb: 'Frais émission CECB',
+            frais_emission_cecb_plus: 'Frais émission CECB Plus',
+            prix_conseil_incitatif: 'Prix conseil incitatif',
+            conseil_restitution_cecb_plus: 'Conseil restitution (CHF/h)',
+            demande_subvention_cecb_plus: 'Demande subvention (CHF/h)',
+            forfait_normal: 'Forfait normal',
+            forfait_express: 'Forfait express',
+            forfait_urgent: 'Forfait urgent',
+            frais_transfert_cecb: 'Frais transfert CECB'
+        };
+
+        const TARIF_SECTIONS = {
+            'Prix de base': ['base_price'],
+            'Distance': ['km_factor_proche', 'km_factor_loin', 'km_seuil'],
+            'Surface': ['surface_factor_petit', 'surface_factor_grand', 'surface_seuil'],
+            'CECB Plus': ['plus_factor_petit', 'plus_factor_moyen', 'plus_factor_grand', 'plus_seuil_petit', 'plus_seuil_grand', 'plus_price_max'],
+            'Frais': ['frais_emission_cecb', 'frais_emission_cecb_plus', 'frais_transfert_cecb', 'prix_conseil_incitatif', 'conseil_restitution_cecb_plus', 'demande_subvention_cecb_plus'],
+            'Forfaits': ['forfait_normal', 'forfait_express', 'forfait_urgent']
+        };
+
+        async function loadTarifs() {
+            try {
+                const response = await fetch('/api/tarifs');
+                currentTarifs = await response.json();
+                originalTarifs = JSON.parse(JSON.stringify(currentTarifs));
+                renderTarifsPanel(currentTarifs);
+                updateDelaiOptions();
+                updateTransfertLabel();
+            } catch (error) {
+                console.error('Erreur chargement tarifs:', error);
+                document.getElementById('tarifsFields').innerHTML = '<p class="tarif-info">Erreur de chargement</p>';
+            }
+        }
+
+        function renderTarifsPanel(tarifs) {
+            const container = document.getElementById('tarifsFields');
+            let html = '';
+
+            for (const [section, keys] of Object.entries(TARIF_SECTIONS)) {
+                html += `<div class="tarif-separator">${section}</div>`;
+                for (const key of keys) {
+                    if (tarifs[key] !== undefined) {
+                        const label = TARIF_LABELS[key] || key;
+                        const step = Number.isInteger(tarifs[key]) ? '1' : '0.01';
+                        html += `<div class="tarif-group">
+                            <label for="tarif_${key}">${label}</label>
+                            <input type="number" id="tarif_${key}" data-tarif-key="${key}" value="${tarifs[key]}" step="${step}">
+                        </div>`;
+                    }
+                }
+            }
+
+            container.innerHTML = html;
+
+            // Écouter les changements pour mise à jour dynamique
+            container.querySelectorAll('input[data-tarif-key]').forEach(input => {
+                input.addEventListener('change', function() {
+                    const key = this.dataset.tarifKey;
+                    currentTarifs[key] = parseFloat(this.value) || 0;
+                    if (key === 'forfait_express' || key === 'forfait_urgent') {
+                        updateDelaiOptions();
+                    }
+                    if (key === 'frais_transfert_cecb') {
+                        updateTransfertLabel();
+                    }
+                });
+            });
+        }
+
+        function updateDelaiOptions() {
+            const expressOpt = document.getElementById('option_express');
+            const urgentOpt = document.getElementById('option_urgent');
+            if (expressOpt) expressOpt.textContent = `Express (+${currentTarifs.forfait_express || 155} CHF)`;
+            if (urgentOpt) urgentOpt.textContent = `Urgent (+${currentTarifs.forfait_urgent || 310} CHF)`;
+        }
+
+        function updateTransfertLabel() {
+            const label = document.getElementById('frais_transfert_label');
+            if (label) label.textContent = currentTarifs.frais_transfert_cecb || 90;
+        }
+
+        function getTarifsOverride() {
+            // Comparer les tarifs du panneau avec les originaux, ne renvoyer que les différences
+            const overrides = {};
+            for (const key of Object.keys(originalTarifs)) {
+                const input = document.getElementById(`tarif_${key}`);
+                if (input) {
+                    const val = parseFloat(input.value);
+                    if (!isNaN(val) && val !== originalTarifs[key]) {
+                        overrides[key] = val;
+                    }
+                }
+            }
+            return Object.keys(overrides).length > 0 ? overrides : null;
+        }
+
         // Log de chargement
         window.addEventListener('load', () => {
             addLog('✅ Formulaire de création de devis chargé', 'success');
             addLog('🗺️  Autocomplétion Google Places activée', 'info');
+
+            // Charger les tarifs dans le panneau
+            loadTarifs();
 
             // Pré-remplir le formulaire depuis les paramètres URL
             prefillFormFromURL();
@@ -713,6 +922,21 @@
             }
         });
 
+        // CECB existant (mise à jour)
+        const cecbExistantCheckbox = document.getElementById('cecb_existant');
+        const rabaisCecbGroup = document.getElementById('group_rabais_cecb');
+
+        cecbExistantCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                rabaisCecbGroup.classList.remove('hidden');
+                addLog('📋 CECB existant : rabais + transfert activés', 'info');
+            } else {
+                rabaisCecbGroup.classList.add('hidden');
+                document.getElementById('rabais_cecb').value = 0;
+                addLog('📋 CECB existant désactivé', 'info');
+            }
+        });
+
         // ========================================
         // SOUMISSION DU FORMULAIRE
         // ========================================
@@ -734,6 +958,23 @@
                 data.rue_batiment = data.rue_facturation;
                 data.npa_batiment = data.npa_facturation;
                 data.localite_batiment = data.localite_facturation;
+            }
+
+            // CECB existant
+            data.cecb_existant = cecbExistantCheckbox.checked;
+            if (!data.cecb_existant) {
+                delete data.rabais_cecb;
+            }
+
+            // Tarifs override (uniquement les valeurs modifiées)
+            const tarifsOverride = getTarifsOverride();
+            if (tarifsOverride) {
+                data.tarifs_override = tarifsOverride;
+            }
+
+            // Le champ message va dans message_personnalise pour le script
+            if (data.message) {
+                data.message_personnalise = data.message;
             }
 
             // Désactiver le bouton
@@ -900,7 +1141,15 @@
             }
 
             // 12. Message
-            setFieldValue('message', formData.message || '');
+            setFieldValue('message', formData.message || formData.message_personnalise || '');
+
+            // 13. CECB existant
+            if (formData.cecb_existant) {
+                setCheckbox('cecb_existant', true);
+                if (formData.rabais_cecb) {
+                    setFieldValue('rabais_cecb', formData.rabais_cecb);
+                }
+            }
 
             // Afficher un message de succès
             addLog(`✅ Formulaire pré-rempli avec les données de "${submissionData.client_name}"`, 'success');
